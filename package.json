@@ -1,0 +1,30 @@
+{
+  "name": "@fuwu-yuan/bgew",
+  "version": "1.0.0",
+  "description": "BaguetteGameEngineWeb is a french 2D Web game engine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "game",
+    "engine",
+    "french",
+    "bgew",
+    "gaming",
+    "2d",
+    "web"
+  ],
+  "author": "Steve Cohen",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "rxjs": "^7.1.0"
+  }
+}
