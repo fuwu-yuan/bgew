@@ -16,6 +16,7 @@ export abstract class Entity {
   protected _board: Board | null = null;
   private _visible: boolean = true;
   public hovered: boolean = false;
+  private _disabled: boolean = false;
 
   constructor(x: number, y: number, width: number, height: number) {
     this._x = x;
@@ -106,4 +107,7 @@ export abstract class Entity {
 
   abstract draw(ctx: CanvasRenderingContext2D): void;
   abstract update(delta: number): void;
+
+  get disabled(): boolean { return this._disabled; }
+  set disabled(value: boolean) { this._disabled = value; }
 }

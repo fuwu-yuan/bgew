@@ -1,7 +1,8 @@
 import {Entity} from "./entity";
 import {GameStep} from "./gamestep";
-import {NetworkManager} from "./network/network.manager";
+import {NetworkManager} from "./network/networkmanager";
 import {BoardConfig} from "./config";
+import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 
 /**
  * The borad is the main part of your Game
@@ -16,7 +17,7 @@ export class Board {
   private readonly defaultFillStyle: string | CanvasGradient | CanvasPattern;
   private steps: { [key: string]: GameStep; } = {};
   private _step: GameStep|null = null;
-  private readonly _networkManager: NetworkManager;
+  private _networkManager: AbstractNetworkManager;
   private _name: string;
   private _version: string;
 
@@ -100,8 +101,12 @@ export class Board {
   /**
    * Get Network Manager
    */
-  get networkManager(): NetworkManager {
+  get networkManager(): AbstractNetworkManager {
     return this._networkManager;
+  }
+
+  set networkManager(networkManager: AbstractNetworkManager) {
+    this._networkManager = networkManager;
   }
 
   get canvas(): HTMLCanvasElement {
@@ -239,6 +244,7 @@ export class Board {
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
     this.entities.forEach(function (entity: Entity) {
+      if (entity.disabled) return;
       if (entity.intersect(x, y)) {
         if (event.type === "mousemove") {
           if (!entity.hovered) {

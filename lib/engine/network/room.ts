@@ -6,5 +6,5 @@ export interface Room {
   open: boolean;
   data: any;
   limit: number;
-  players: any[];
+  clients: any[];
 }

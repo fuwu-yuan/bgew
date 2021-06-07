@@ -1,35 +1,22 @@
-import {webSocket, WebSocketSubject} from "rxjs/webSocket";
-import {Board} from "../board";
-import {Room} from './network.room';
-import {Response} from "./network.response";
-import {environment} from '../../../environments/environment';
+import {webSocket} from "rxjs/webSocket";
+import {Room} from './room';
+import {Response} from "./response";
 import {SocketMessage} from "./socketMessage";
-import {AxiosResponse, default as axios} from 'axios';
+import {AxiosResponse} from 'axios';
+import {AbstractNetworkManager} from "./networkmanager.abstract";
 
-export class NetworkManager {
+export class NetworkManager extends AbstractNetworkManager {
 
-  private api;
-  private board: Board;
-  private ws: WebSocketSubject<SocketMessage>|null = null;
   public roomuid: string = "";
 
-  constructor(board: Board) {
-    this.board = board;
-    this.checkPageReload();
-    this.api = axios.create({
-      baseURL: environment.apiUrl,
-      timeout: 1000,
-      headers: {
-        'Accept': 'application/json',
-        'rejectUnauthorized': 'false',
-      }
-    });
-  }
-
+  /**
+   * @override
+   */
   joinRoom(uid: string): Promise<Response> {
+    if (this.roomuid === "") this.roomuid = uid;
     return new Promise<Response>((resolve, reject) => {
       try {
-        this.ws = webSocket(environment.wsUrl + uid);
+        this.ws = webSocket(this.wsUrl + uid);
         this.ws.subscribe(
           (msg: SocketMessage) => {
             switch (msg.code) {
@@ -41,6 +28,9 @@ export class NetworkManager {
                 break;
               case "broadcast":
                 this.board.step.onNetworkMessage(msg);
+                break;
+              case "msg_sent":
+                this.board.networkManager.msgSentConfirmation(msg);
                 break;
               case "connected":
                 resolve({status:"success", code: "connected", data: msg.data});
@@ -65,6 +55,9 @@ export class NetworkManager {
     });
   }
 
+  /**
+   * @override
+   */
   createRoom(name: string, limit = 0, autojoinroom = true): Promise<Response> {
     console.log("Creating room " + name);
     return this.api.post<any, AxiosResponse<Response>>('/room', {
@@ -73,23 +66,35 @@ export class NetworkManager {
       name: name,
       limit: limit
     }).then((response) => {
-      this.roomuid = response.data.data.uid;
-      if (autojoinroom) {
-        return this.joinRoom(this.roomuid);
+      let resp = response.data;
+      if (resp.status === "success") {
+        this.roomuid = resp.data.uid;
+        if (autojoinroom) {
+          return this.joinRoom(this.roomuid);
+        }else {
+          return response.data;
+        }
       }else {
-        return response.data;
+        throw resp;
       }
     });
   }
 
-  setRoomData(data: any): Promise<Response> {
+  /**
+   * @override
+   */
+  setRoomData(data: any, merge: boolean = false): Promise<Response> {
     return this.api.post<any, AxiosResponse<Response>>('/room/data/'+this.roomuid, {
       data: data,
+      merge: merge
     }).then(function(response) {
       return response.data;
     });
   }
 
+  /**
+   * @override
+   */
   closeRoom(uid: string, close: boolean = true): Promise<Response> {
     return this.api.post<any, AxiosResponse<Response>>('/room/close/'+this.roomuid, {
       close: close,
@@ -98,10 +103,16 @@ export class NetworkManager {
     });
   }
 
+  /**
+   * @override
+   */
   openRoom(uid: string): Promise<Response> {
     return this.closeRoom(uid, false);
   }
 
+  /**
+   * @override
+   */
   getOpenedRooms(): Promise<{status:string,servers:Room[]}> {
     return this.api.get<any, AxiosResponse<{status:string,servers:Room[]}>>('/room', {
       params: {
@@ -114,6 +125,9 @@ export class NetworkManager {
     });
   }
 
+  /**
+   * @override
+   */
   getClosedRooms(): Promise<{status:string,servers:Room[]}> {
     return this.api.get<any, AxiosResponse<{status:string,servers:Room[]}>>('/room', {
       params: {
@@ -123,15 +137,6 @@ export class NetworkManager {
       }
     }).then(function(response) {
       return response.data;
-    });
-  }
-
-  private checkPageReload() {
-    window.addEventListener("beforeunload", (event) => {
-      console.log("The page is refreshing");
-      if (this.ws) {
-        this.ws.unsubscribe();
-      }
     });
   }
 }

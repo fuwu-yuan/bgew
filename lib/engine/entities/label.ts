@@ -63,19 +63,34 @@ export class Label extends Entity {
     ctx.font = fontSize + "px sans-serif";
 
     //text position
-    var textSize = ctx.measureText(this._text);
-    this.width = textSize.width;
-    this.height = fontSize;
     var textX = this.x;
     var textY = this.y + fontSize;
 
-    //draw the text
-    ctx.fillText(this._text, textX, textY);
+    let lines: string[] = this._text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      //draw the text
+      ctx.fillText(lines[i], textX, textY + (i*fontSize));
+    }
+  }
+
+  get height() {
+    let lines: string[] = this._text.split("\n");
+    return lines.length*this.fontSize;
+  }
+
+  set height(height: number) {
+    this._height = height;
   }
 
   get width() {
+    let width = 0;
     this.ctx.font = this.fontSize + "px sans-serif";
-    return this.ctx.measureText(this._text).width;
+    let lines: string[] = this._text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      let tmp = this.ctx.measureText(this._text).width;
+      if (tmp > width) width = tmp;
+    }
+    return width;
   }
 
   set width(width: number) {

@@ -1,7 +1,7 @@
 import {Entity} from "../entity";
 
 export class Button extends Entity {
-  private text: string;
+  private _text: string;
 
   private _strokeColor: string = "rgba(230,77,59, 1.0)";
   private _fillColor: string = "rgba(0, 0, 0, 0.0)";
@@ -16,39 +16,33 @@ export class Button extends Entity {
   private _hoverFontColor: string = "rgba(255, 255, 255, 1.0)";
   private _clickFontColor: string = "rgba(255, 255, 255, 1.0)";
   private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 10, tr: 10, br: 10, bl: 10};
+  private _hoverCursor: string = "default";
   private _clicked: boolean = false;
+
 
   constructor(x: number, y: number, width: number, height: number, text: string = "") {
     super(x, y, width, height);
-    this.onMouseEvent("mousedown", this.onMouseDown(this));
-    this.onMouseEvent("mouseup", this.onMouseUp(this));
-    this.onMouseEvent("mouseenter", this.onMouseEnter(this));
-    this.onMouseEvent("mouseleave", this.onMouseLeave(this));
-    this.text = text;
+    this.onMouseEvent("mousedown", this.onMouseDown.bind(this));
+    this.onMouseEvent("mouseup", this.onMouseUp.bind(this));
+    this.onMouseEvent("mouseenter", this.onMouseEnter.bind(this));
+    this.onMouseEvent("mouseleave", this.onMouseLeave.bind(this));
+    this._text = text;
   }
 
-  private onMouseDown(self: Button) {
-    return (event: MouseEvent) => {
-      self._clicked = true;
-    }
+  private onMouseDown( event: MouseEvent) {
+    this._clicked = true;
   }
 
-  private onMouseUp(self: Button) {
-    return (event: MouseEvent) => {
-      self._clicked = false;
-    }
+  private onMouseUp(event: MouseEvent) {
+    this._clicked = false;
   }
 
-  private onMouseEnter(self: Button) {
-    return (event: MouseEvent) => {
-      self.board?.changeCursor("pointer");
-    }
+  private onMouseEnter(event: MouseEvent) {
+    this.board?.changeCursor(this._hoverCursor);
   }
 
-  private onMouseLeave(self: Button) {
-    return (event: MouseEvent) => {
-      self.board?.changeCursor("default");
-    }
+  private onMouseLeave(event: MouseEvent) {
+    this.board?.changeCursor("default");
   }
 
   get clicked() {
@@ -57,6 +51,14 @@ export class Button extends Entity {
 
   set clicked(clicked: boolean) {
     this._clicked = clicked;
+  }
+
+  get text(): string {
+    return this._text;
+  }
+
+  set text(value: string) {
+    this._text = value;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -102,12 +104,12 @@ export class Button extends Entity {
     ctx.font = fontSize + "px sans-serif";
 
     //text position
-    var textSize = ctx.measureText(this.text);
+    var textSize = ctx.measureText(this._text);
     var textX = this.x + (this.width/2) - (textSize.width / 2);
     var textY = this.y + fontSize + (this.height/2) - (fontSize/2);
 
     //draw the text
-    ctx.fillText(this.text, textX, textY);
+    ctx.fillText(this._text, textX, textY);
   }
 
   update(): void {
@@ -144,4 +146,6 @@ export class Button extends Entity {
   set hoverFontSize(value: number) { this._hoverFontSize = value; }
   get radius(): { tl: number; tr: number; br: number; bl: number } { return this._radius; }
   set radius(value: { tl: number; tr: number; br: number; bl: number }) { this._radius = value; }
+  get hoverCursor(): string { return this._hoverCursor; }
+  set hoverCursor(value: string) { this._hoverCursor = value; }
 }
