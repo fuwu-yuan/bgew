@@ -104,7 +104,7 @@ export class Square extends Entity {
     ctx.stroke();
   }
 
-  update(): void {
+  update(delta: number): void {
 
   }
 

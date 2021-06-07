@@ -97,7 +97,7 @@ export class Label extends Entity {
     this._width = width;
   }
 
-  update(): void {
+  update(delta: number): void {
 
   }
 

@@ -112,7 +112,7 @@ export class Button extends Entity {
     ctx.fillText(this._text, textX, textY);
   }
 
-  update(): void {
+  update(delta: number): void {
 
   }
 
