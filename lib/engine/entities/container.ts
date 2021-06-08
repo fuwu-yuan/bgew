@@ -71,6 +71,17 @@ export class Container extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    this.entities.forEach((entity: Entity) => {
+      if (entity.visible) {
+        this.board?.resetStyles();
+        ctx.save();
+        ctx.translate(entity.translate.x, entity.translate.y);
+        ctx.rotate(entity.rotate);
+        entity.draw(this.board?.ctx as CanvasRenderingContext2D);
+        ctx.restore();
+      }
+    });
+
     ctx.translate(this.x, this.y);
     for (const entity of this._entities) {
       entity.draw(ctx);
