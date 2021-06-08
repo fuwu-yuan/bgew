@@ -8,6 +8,7 @@ import {Board} from "./board";
  */
 export abstract class Entity {
   protected _translate: {x: number, y:number} = {x: 0, y:0};
+  protected _rotate: number = 0;
   protected _x: number;
   protected _y: number;
   protected _width: number;
@@ -39,6 +40,14 @@ export abstract class Entity {
 
   set translate(translate: {x: number, y: number}) {
     this._translate = translate;
+  }
+
+  get rotate(): number {
+    return this._rotate;
+  }
+
+  set rotate(angle: number) {
+    this._rotate = angle;
   }
 
   get x() {

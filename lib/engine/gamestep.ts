@@ -48,6 +48,7 @@ export abstract class GameStep {
           self.board.resetStyles();
           self.board.ctx.save();
           self.board.ctx.translate(entity.translate.x, entity.translate.y);
+          self.board.ctx.rotate(entity.rotate);
           entity.draw(self.board.ctx as CanvasRenderingContext2D);
           self.board.ctx.restore();
         }
