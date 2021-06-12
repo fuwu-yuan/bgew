@@ -21,11 +21,13 @@ export class Board {
   private _name: string;
   private _version: string;
 
-  constructor(name: string, version: string) {
+  constructor(name: string, version: string, width: number, height: number) {
     this._name = name;
     this._version = version;
     this._networkManager = new NetworkManager(this);
     this._config = new BoardConfig();
+    this._config.board.size.width = width;
+    this.config.board.size.height = height;
     this.canvas = this.createCanvasElem();
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     this.defaultStrokeStyle = this.ctx.strokeStyle;
@@ -214,7 +216,7 @@ export class Board {
    */
   public clear() {
     this.ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx?.beginPath();
+    //this.ctx?.beginPath();
   }
 
   /**

@@ -38,19 +38,25 @@ export abstract class GameStep {
    * Game draw loop
    */
   draw() {
-    let self = this;
     if (this.board.canvas) {
       /* Clear canvas */
-      this.board.ctx.clearRect(0, 0, this.board.canvas.width, this.board.canvas.height);
       this.board.clear();
-      this.board.entities.forEach(function(entity: Entity) {
+      this.board.entities.forEach((entity: Entity) => {
         if (entity.visible) {
-          self.board.resetStyles();
-          self.board.ctx.save();
-          self.board.ctx.translate(entity.translate.x, entity.translate.y);
-          self.board.ctx.rotate(entity.rotate);
-          entity.draw(self.board.ctx as CanvasRenderingContext2D);
-          self.board.ctx.restore();
+          // Reset style
+          this.board.resetStyles();
+          // Save context
+          this.board.ctx.save();
+          // Translate context
+          this.board.ctx.translate(entity.translate.x, entity.translate.y);
+          // Rotate context from entity center
+          this.board.ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
+          this.board.ctx.rotate(entity.rotate);
+          this.board.ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
+          // Draw entity
+          entity.draw(this.board.ctx as CanvasRenderingContext2D);
+          // Restore context
+          this.board.ctx.restore();
         }
       });
     }

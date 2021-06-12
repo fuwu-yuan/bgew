@@ -47,6 +47,7 @@ export abstract class Entity {
   }
 
   set rotate(angle: number) {
+    angle = angle * Math.PI / 180
     this._rotate = angle;
   }
 
