@@ -39,7 +39,7 @@ export abstract class GameStep {
    */
   draw() {
     if (this.board.canvas) {
-      /* Clear canvas */
+      // Clear canvas
       this.board.clear();
       this.board.entities.forEach((entity: Entity) => {
         if (entity.visible) {

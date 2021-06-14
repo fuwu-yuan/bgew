@@ -72,14 +72,25 @@ export class Container extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    ctx.strokeStyle = "blue";
+    this.path.rect(this.x, this.y, this.width, this.height);
+    ctx.stroke(this.path);
     ctx.translate(this.x, this.y);
     this.entities.forEach((entity: Entity) => {
       if (entity.visible) {
+        // Reset style
         this.board?.resetStyles();
+        // Save context
         ctx.save();
+        // Translate context
         ctx.translate(entity.translate.x, entity.translate.y);
+        // Rotate context from entity center
+        ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
         ctx.rotate(entity.rotate);
+        ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
+        // Draw entity
         entity.draw(ctx);
+        // Restore context
         ctx.restore();
       }
     });

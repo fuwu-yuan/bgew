@@ -18,12 +18,14 @@ export abstract class Entity {
   private _visible: boolean = true;
   public hovered: boolean = false;
   private _disabled: boolean = false;
+  private _path: Path2D;
 
   constructor(x: number, y: number, width: number, height: number) {
     this._x = x;
     this._y = y;
     this._width = width;
     this._height = height;
+    this._path = new Path2D();
   }
 
   get board(): Board | null {
@@ -95,8 +97,21 @@ export abstract class Entity {
   }
 
   intersect(x: number, y: number): boolean {
-    return x >= (this.x + this.translate.x) && x <= (this.x + this.translate.x) + this.width &&
-      y >= (this.y + this.translate.y) && y <= (this.y + this.translate.y) + this.height;
+    this.board?.ctx.translate(this.translate.x, this.translate.y);
+    // Rotate context from entity center
+    this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
+    this.board?.ctx.rotate(this.rotate);
+    this.board?.ctx.translate((this.x + this.width/2)*-1, (this.y + this.height/2)*-1)
+
+    let result = this.board?.ctx.isPointInPath(this.path, x, y) || false;
+
+    // UNDO Rotate context from entity center
+    this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
+    this.board?.ctx.rotate(this.rotate*-1);
+    this.board?.ctx.translate((this.x + this.width/2)*-1, (this.y + this.height/2)*-1)
+    // UNDO Translate context
+    this.board?.ctx.translate(this.translate.x*-1, this.translate.y*-1);
+    return result;
   }
 
   intersectWithEntity(entity: Entity): boolean {
@@ -115,9 +130,12 @@ export abstract class Entity {
     this.dispatcher.on(event, callback);
   }
 
-  abstract draw(ctx: CanvasRenderingContext2D): void;
+  draw(ctx: CanvasRenderingContext2D): void {
+    this._path = new Path2D();
+  }
   abstract update(delta: number): void;
 
   get disabled(): boolean { return this._disabled; }
   set disabled(value: boolean) { this._disabled = value; }
+  get path() { return this._path; }
 }

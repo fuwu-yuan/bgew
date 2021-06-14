@@ -77,6 +77,7 @@ export class Square extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    super.draw(ctx);
     //set color
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;
@@ -89,19 +90,19 @@ export class Square extends Entity {
     }
 
     //draw square
-    ctx.beginPath();
-    ctx.moveTo(this.x + this.radius.tl, this.y);
-    ctx.lineTo(this.x + this.width - this.radius.tr, this.y);
-    ctx.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius.tr);
-    ctx.lineTo(this.x + this.width, this.y + this.height - this.radius.br);
-    ctx.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius.br, this.y + this.height);
-    ctx.lineTo(this.x + this.radius.bl, this.y + this.height);
-    ctx.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius.bl);
-    ctx.lineTo(this.x, this.y + this.radius.tl);
-    ctx.quadraticCurveTo(this.x, this.y, this.x + this.radius.tl, this.y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    //ctx.beginPath();
+    this.path.moveTo(this.x + this.radius.tl, this.y);
+    this.path.lineTo(this.x + this.width - this.radius.tr, this.y);
+    this.path.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius.tr);
+    this.path.lineTo(this.x + this.width, this.y + this.height - this.radius.br);
+    this.path.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius.br, this.y + this.height);
+    this.path.lineTo(this.x + this.radius.bl, this.y + this.height);
+    this.path.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius.bl);
+    this.path.lineTo(this.x, this.y + this.radius.tl);
+    this.path.quadraticCurveTo(this.x, this.y, this.x + this.radius.tl, this.y);
+    //ctx.closePath();
+    ctx.fill(this.path);
+    ctx.stroke(this.path);
   }
 
   update(delta: number): void {
