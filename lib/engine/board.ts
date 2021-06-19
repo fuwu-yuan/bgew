@@ -3,6 +3,7 @@ import {GameStep} from "./gamestep";
 import {NetworkManager} from "./network/networkmanager";
 import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
+import {Container} from "./entities";
 
 /**
  * The borad is the main part of your Game
@@ -247,11 +248,11 @@ export class Board {
     const y = event.clientY - rect.top
     this.entities.forEach(function (entity: Entity) {
       if (entity.disabled) return;
-      if (entity.intersect(x, y)) {
+      if (entity.intersect(x, y, event)) {
         if (event.type === "mousemove") {
           if (!entity.hovered) {
             entity.hovered = true;
-            entity.dispatcher.dispatch("mouseenter");
+            entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
           }
         }
         entity.dispatcher.dispatch(event.type, event);
@@ -259,7 +260,7 @@ export class Board {
         if (event.type === "mousemove") {
           if (entity.hovered) {
             entity.hovered = false;
-            entity.dispatcher.dispatch("mouseleave");
+            entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
           }
         }
       }

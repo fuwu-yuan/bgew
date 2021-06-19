@@ -13,6 +13,10 @@ export class Dispatcher {
     if (event) {
       event.fire(data);
     }
+    const all = this.events["all"];
+    if (all) {
+      all.fire(data);
+    }
   }
 
   on(eventName: string, callback: (data: any) => void) {

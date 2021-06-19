@@ -23,10 +23,10 @@ export class Square extends Entity {
               radius: {tl: number, tr: number, br: number, bl: number}|null = null
               ) {
     super(x, y, width, height);
-    this.onMouseEvent("mousedown", this.onMouseDown(this));
-    this.onMouseEvent("mouseup", this.onMouseUp(this));
-    this.onMouseEvent("mouseenter", this.onMouseEnter(this));
-    this.onMouseEvent("mouseleave", this.onMouseLeave(this));
+    this.onMouseEvent("mousedown", this.onMouseDown.bind(this));
+    this.onMouseEvent("mouseup", this.onMouseUp.bind(this));
+    this.onMouseEvent("mouseenter", this.onMouseEnter.bind(this));
+    this.onMouseEvent("mouseleave", this.onMouseLeave.bind(this));
     if (strokeColor) {
       this.strokeColor = strokeColor;
       this.hoverStrokeColor = strokeColor;
@@ -44,28 +44,20 @@ export class Square extends Entity {
     if (radius) { this.radius = radius; }
   }
 
-  private onMouseDown(self: Square) {
-    return (event: MouseEvent) => {
-      self._clicked = true;
-    }
+  private onMouseDown(event: MouseEvent) {
+      this._clicked = true;
   }
 
-  private onMouseUp(self: Square) {
-    return (event: MouseEvent) => {
-      self._clicked = false;
-    }
+  private onMouseUp(event: MouseEvent) {
+      this._clicked = false;
   }
 
-  private onMouseEnter(self: Square) {
-    return (event: MouseEvent) => {
-      //self.board?.changeCursor("pointer");
-    }
+  private onMouseEnter(event: MouseEvent) {
+      //this.board?.changeCursor("pointer");
   }
 
-  private onMouseLeave(self: Square) {
-    return (event: MouseEvent) => {
-      //self.board?.changeCursor("default");
-    }
+  private onMouseLeave(event: MouseEvent) {
+      //this.board?.changeCursor("default");
   }
 
   get clicked() {
@@ -77,7 +69,7 @@ export class Square extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    super.draw(ctx);
+    //super.draw(ctx);
     //set color
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;
@@ -90,25 +82,29 @@ export class Square extends Entity {
     }
 
     //draw square
-    //ctx.beginPath();
-    this.path.moveTo(this.x + this.radius.tl, this.y);
-    this.path.lineTo(this.x + this.width - this.radius.tr, this.y);
-    this.path.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius.tr);
-    this.path.lineTo(this.x + this.width, this.y + this.height - this.radius.br);
-    this.path.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius.br, this.y + this.height);
-    this.path.lineTo(this.x + this.radius.bl, this.y + this.height);
-    this.path.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius.bl);
-    this.path.lineTo(this.x, this.y + this.radius.tl);
-    this.path.quadraticCurveTo(this.x, this.y, this.x + this.radius.tl, this.y);
-    //ctx.closePath();
-    ctx.fill(this.path);
-    ctx.stroke(this.path);
+    let path = this.getPath2D();
+    ctx.fill(path);
+    ctx.stroke(path);
+  }
+
+  getPath2D(): Path2D {
+    let path = new Path2D();
+    path.moveTo(this.x + this.radius.tl, this.y);
+    path.lineTo(this.x + this.width - this.radius.tr, this.y);
+    path.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius.tr);
+    path.lineTo(this.x + this.width, this.y + this.height - this.radius.br);
+    path.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius.br, this.y + this.height);
+    path.lineTo(this.x + this.radius.bl, this.y + this.height);
+    path.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius.bl);
+    path.lineTo(this.x, this.y + this.radius.tl);
+    path.quadraticCurveTo(this.x, this.y, this.x + this.radius.tl, this.y);
+    path.closePath();
+    return path;
   }
 
   update(delta: number): void {
 
   }
-
 
   /*********************
    * Getters & Setters *

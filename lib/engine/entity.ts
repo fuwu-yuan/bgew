@@ -1,5 +1,6 @@
 import {Dispatcher} from "../classes/Dispatcher";
 import {Board} from "./board";
+import {Container} from "./entities";
 
 /**
  * The most important part of your game
@@ -18,14 +19,14 @@ export abstract class Entity {
   private _visible: boolean = true;
   public hovered: boolean = false;
   private _disabled: boolean = false;
-  private _path: Path2D;
+  //private _path: Path2D;
 
   constructor(x: number, y: number, width: number, height: number) {
     this._x = x;
     this._y = y;
     this._width = width;
     this._height = height;
-    this._path = new Path2D();
+    //this._path = new Path2D();
   }
 
   get board(): Board | null {
@@ -96,14 +97,16 @@ export abstract class Entity {
     return this._dispatcher;
   }
 
-  intersect(x: number, y: number): boolean {
+  intersect(x: number, y: number, event: MouseEvent, depth = 1): boolean {
+    /*return x >= (this.x + this.translate.x) && x <= (this.x + this.translate.x) + this.width &&
+      y >= (this.y + this.translate.y) && y <= (this.y + this.translate.y) + this.height;*/
     this.board?.ctx.translate(this.translate.x, this.translate.y);
     // Rotate context from entity center
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
     this.board?.ctx.rotate(this.rotate);
     this.board?.ctx.translate((this.x + this.width/2)*-1, (this.y + this.height/2)*-1)
 
-    let result = this.board?.ctx.isPointInPath(this.path, x, y) || false;
+    let result = this.board?.ctx.isPointInPath(this.getPath2D(), x, y) || false;
 
     // UNDO Rotate context from entity center
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
@@ -123,19 +126,25 @@ export abstract class Entity {
 
   /**
    * Listen mouse event on this entity
-   * @param event An event from this list : click, dblclick, contextmenu, mousedown, mouseup, mouseenter, mouseleave, mousemove
+   * @param event An event from this list : click, dblclick, contextmenu, mousedown, mouseup, mouseenter, mouseleave, mousemove, all
    * @param callback
    */
-  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove", callback: (event: MouseEvent) => void) {
+  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void) {
     this.dispatcher.on(event, callback);
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
-    this._path = new Path2D();
+  getPath2D(): Path2D {
+    let path = new Path2D();
+    path.rect(this.x, this.y, this.width, this.height);
+    path.closePath();
+
+    return path;
   }
+
+  abstract draw(ctx: CanvasRenderingContext2D): void;
   abstract update(delta: number): void;
 
   get disabled(): boolean { return this._disabled; }
   set disabled(value: boolean) { this._disabled = value; }
-  get path() { return this._path; }
+  //get path() { return this._path; }
 }
