@@ -4,6 +4,7 @@ import {NetworkManager} from "./network/networkmanager";
 import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 import {Container} from "./entities";
+import {Debug} from "../classes/Debug";
 
 /**
  * The borad is the main part of your Game
@@ -21,12 +22,14 @@ export class Board {
   private _networkManager: AbstractNetworkManager;
   private _name: string;
   private _version: string;
+  private _debug: Debug;
 
   constructor(name: string, version: string, width: number, height: number) {
     this._name = name;
     this._version = version;
     this._networkManager = new NetworkManager(this);
     this._config = new BoardConfig();
+    this._debug = new Debug();
     this._config.board.size.width = width;
     this.config.board.size.height = height;
     this.canvas = this.createCanvasElem();
@@ -58,6 +61,7 @@ export class Board {
       lastUpdate = now;
       this.step.update(delta);
       this.step.draw();
+      this.step.debug();
     }, 1000/this._config.game.FPS);
   }
 
@@ -273,6 +277,10 @@ export class Board {
 
   get height() {
     return this.config.board.size.height;
+  }
+
+  get debug(): Debug {
+    return this._debug;
   }
 
   /**

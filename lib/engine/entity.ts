@@ -141,6 +141,15 @@ export abstract class Entity {
     return path;
   }
 
+  debug(ctx: CanvasRenderingContext2D) {
+    if (this.board) {
+      if (this.board.debug.skeleton) {
+        this.board.ctx.strokeStyle = "red";
+        this.board.ctx.stroke(this.getPath2D());
+      }
+    }
+  }
+
   abstract draw(ctx: CanvasRenderingContext2D): void;
   abstract update(delta: number): void;
 

@@ -118,8 +118,6 @@ export class Container extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    //super.draw(ctx);
-    let path = this.getPath2D();
     ctx.translate(this.x, this.y);
     this.entities.forEach((entity: Entity) => {
       if (entity.visible) {
@@ -145,6 +143,30 @@ export class Container extends Entity {
     for (const entity of this.entities) {
       entity.update(delta);
     }
+  }
+
+  debug(ctx: CanvasRenderingContext2D) {
+    //super.draw(ctx);
+    ctx.translate(this.x, this.y);
+    this.entities.forEach((entity: Entity) => {
+        // Reset style
+        this.board?.resetStyles();
+        // Save context
+        ctx.save();
+        // Translate context
+        ctx.translate(entity.translate.x, entity.translate.y);
+        // Rotate context from entity center
+        ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
+        ctx.rotate(entity.rotate);
+        ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
+        // Draw entity
+        if (this.board?.debug.skeleton) {
+          this.board.ctx.strokeStyle = "red";
+          this.board.ctx.stroke(this.getPath2D());
+        }
+        // Restore context
+        ctx.restore();
+    });
   }
 
   set board(value: Board | null) {
