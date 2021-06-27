@@ -52,7 +52,8 @@ export abstract class GameStep {
           // Rotate context from entity center
           this.board.ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
           this.board.ctx.rotate(entity.rotate);
-          this.board.ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
+          this.board.ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1);
+
           // Draw entity
           entity.draw(this.board.ctx as CanvasRenderingContext2D);
           // Restore context

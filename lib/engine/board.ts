@@ -44,9 +44,20 @@ export class Board {
     elem.width = this.config.board.size.width;
     elem.height = this.config.board.size.height;
     elem.style.cssText = 'background:' + this.config.board.background;
-    document.body.appendChild(elem);
+    let gameContainer = document.getElementById("game");
+    (gameContainer !== null ? gameContainer : document.body).appendChild(elem);
 
     return elem;
+  }
+
+  countEntities(): number {
+    let count = this.entities.length;
+    for (const entity of this.entities) {
+      if (entity instanceof Container) {
+        count += entity.countEntities();
+      }
+    }
+    return count;
   }
 
   /**

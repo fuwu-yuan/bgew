@@ -145,6 +145,17 @@ export class Container extends Entity {
     }
   }
 
+  countEntities() {
+    let count = 0;
+    count = this.entities.length;
+    for (const entity of this.entities) {
+      if (entity instanceof Container) {
+        count += entity.countEntities();
+      }
+    }
+    return count;
+  }
+
   debug(ctx: CanvasRenderingContext2D) {
     //super.draw(ctx);
     ctx.translate(this.x, this.y);

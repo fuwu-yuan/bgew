@@ -10,6 +10,7 @@ import {Container} from "./entities";
 export abstract class Entity {
   protected _translate: {x: number, y:number} = {x: 0, y:0};
   protected _rotate: number = 0;
+  private _zoom: number = 1;
   protected _x: number;
   protected _y: number;
   protected _width: number;
@@ -54,6 +55,14 @@ export abstract class Entity {
     this._rotate = angle;
   }
 
+  get zoom(): number {
+    return this._zoom;
+  }
+
+  set zoom(value: number) {
+    this._zoom = value;
+  }
+
   get x() {
     return this._x;
   }
@@ -71,14 +80,14 @@ export abstract class Entity {
   }
 
   get height(): number {
-    return this._height;
+    return this._height*this._zoom;
   }
 
   set height(value: number) {
     this._height = value;
   }
   get width(): number {
-    return this._width;
+    return this._width*this._zoom;
   }
 
   set width(value: number) {
