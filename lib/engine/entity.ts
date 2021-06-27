@@ -159,6 +159,13 @@ export abstract class Entity {
     }
   }
 
+  reset() {
+    this.x = 0;
+    this.y = 0;
+    this.rotate = 0;
+    this.zoom = 1;
+  }
+
   abstract draw(ctx: CanvasRenderingContext2D): void;
   abstract update(delta: number): void;
 
