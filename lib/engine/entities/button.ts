@@ -3,20 +3,20 @@ import {Entity} from "../entity";
 export class Button extends Entity {
   private _text: string;
 
-  private _strokeColor: string = "rgba(230,77,59, 1.0)";
+  private _strokeColor: string = "rgba(255,255,255, 1.0)";
   private _fillColor: string = "rgba(0, 0, 0, 0.0)";
-  private _hoverStrokeColor: string = "rgba(230,77,59, 1.0)";
-  private _hoverFillColor: string = "rgba(230,77,59, 1.0)";
-  private _clickStrokeColor: string = "rgba(230,97,79, 1.0)"
-  private _clickFillColor: string = "rgba(230,97,79, 1.0)"
+  private _hoverStrokeColor: string = "";
+  private _hoverFillColor: string = "";
+  private _clickStrokeColor: string = "";
+  private _clickFillColor: string = "";
   private _fontSize: number = 20;
-  private _hoverFontSize: number = 20;
-  private _clickFontSize: number = 20;
-  private _fontColor: string = "rgba(230,77,59, 1.0)";
-  private _hoverFontColor: string = "rgba(255, 255, 255, 1.0)";
-  private _clickFontColor: string = "rgba(255, 255, 255, 1.0)";
-  private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 10, tr: 10, br: 10, bl: 10};
-  private _hoverCursor: string = "default";
+  private _hoverFontSize: number = 0;
+  private _clickFontSize: number = 0;
+  private _fontColor: string = "rgba(255,255,255, 1.0)";
+  private _hoverFontColor: string = "";
+  private _clickFontColor: string = "";
+  private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 0, tr: 0, br: 0, bl: 0};
+  private _hoverCursor: string = "";
   private _clicked: boolean = false;
 
 
@@ -38,11 +38,11 @@ export class Button extends Entity {
   }
 
   private onMouseEnter(event: MouseEvent) {
-    this.board?.changeCursor(this._hoverCursor);
+    if (this._hoverCursor !== "") this.board?.changeCursor(this._hoverCursor);
   }
 
   private onMouseLeave(event: MouseEvent) {
-    this.board?.changeCursor("default");
+    if (this._hoverCursor !== "") this.board?.restoreCursor();
   }
 
   get clicked() {
@@ -66,11 +66,11 @@ export class Button extends Entity {
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;
     if (this.clicked) {
-      ctx.strokeStyle = this.clickStrokeColor;
-      ctx.fillStyle = this.clickFillColor;
+      if (this.clickStrokeColor !== "") ctx.strokeStyle = this.clickStrokeColor;
+      if (this.clickFillColor !== "") ctx.fillStyle = this.clickFillColor;
     }else if (this.hovered) {
-      ctx.strokeStyle = ctx.fillStyle = this.hoverStrokeColor;
-      ctx.fillStyle = ctx.fillStyle = this.hoverFillColor;
+      if (this.hoverStrokeColor !== "") ctx.strokeStyle = this.hoverStrokeColor;
+      if (this.hoverFillColor !== "") ctx.fillStyle = this.hoverFillColor;
     }
 
     //draw button
@@ -92,21 +92,23 @@ export class Button extends Entity {
 
     //text options
     var fontSize = this.fontSize;
+    ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fontColor;
     if (this.clicked) {
-      fontSize = this.clickFontSize;
-      ctx.fillStyle = this.clickFontColor;
+      if (this.clickFontSize > 0) fontSize = this.clickFontSize;
+      if (this.clickFontColor !== "") ctx.fillStyle = this.clickFontColor;
     }else if (this.hovered) {
-      fontSize = this.hoverFontSize;
-      ctx.fillStyle = this.hoverFontColor;
+      if (this.hoverFontSize > 0)  fontSize = this.hoverFontSize;
+      if (this.hoverFontColor !== "")  ctx.fillStyle = this.hoverFontColor;
     }
 
     ctx.font = fontSize + "px sans-serif";
 
     //text position
+    let debugFontSize = fontSize - 4;
     var textSize = ctx.measureText(this._text);
     var textX = this.x + (this.width/2) - (textSize.width / 2);
-    var textY = this.y + fontSize + (this.height/2) - (fontSize/2);
+    var textY = this.y + debugFontSize + (this.height/2) - (debugFontSize/2);
 
     //draw the text
     ctx.fillText(this._text, textX, textY);

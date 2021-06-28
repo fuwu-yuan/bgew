@@ -4,13 +4,13 @@ export class Label extends Entity {
 
   private _text: string;
   private _fontSize: number = 20;
-  private _hoverFontSize: number = 20;
-  private _clickFontSize: number = 20;
+  private _hoverFontSize: number = 0;
+  private _clickFontSize: number = 0;
   private _fontColor: string = "rgba(255,255,255, 1.0)";
-  private _hoverFontColor: string = "rgba(255, 255, 255, 1.0)";
-  private _hoverCursor: string = "default";
+  private _hoverFontColor: string = "";
+  private _hoverCursor: string = "";
   private ctx: CanvasRenderingContext2D;
-  private _clickFontColor: string = "rgba(255, 255, 255, 1.0)";
+  private _clickFontColor: string = "";
   private _clicked: boolean = false;
 
   constructor(x: number, y: number, text: string, ctx: CanvasRenderingContext2D) {
@@ -33,11 +33,11 @@ export class Label extends Entity {
   }
 
   private onMouseEnter(event: MouseEvent) {
-    this.board?.changeCursor(this._hoverCursor);
+    if (this._hoverCursor !== "") this.board?.changeCursor(this._hoverCursor);
   }
 
   private onMouseLeave(event: MouseEvent) {
-      this.board?.changeCursor("default");
+    if (this._hoverCursor !== "") this.board?.restoreCursor();
   }
 
   get clicked() {
@@ -53,11 +53,11 @@ export class Label extends Entity {
     var fontSize = this.fontSize;
     ctx.fillStyle = this.fontColor;
     if (this.clicked) {
-      fontSize = this.clickFontSize;
-      ctx.fillStyle = this.clickFontColor;
+      if (this.clickFontSize > 0) fontSize = this.clickFontSize;
+      if (this.clickFontColor !== "") ctx.fillStyle = this.clickFontColor;
     }else if (this.hovered) {
-      fontSize = this.hoverFontSize;
-      ctx.fillStyle = this.hoverFontColor;
+      if (this.hoverFontSize > 0) fontSize = this.hoverFontSize;
+      if (this.hoverFontColor !== "") ctx.fillStyle = this.hoverFontColor;
     }
 
     ctx.font = fontSize + "px sans-serif";

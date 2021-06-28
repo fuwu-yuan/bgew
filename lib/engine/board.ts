@@ -22,6 +22,7 @@ export class Board {
   private _networkManager: AbstractNetworkManager;
   private _name: string;
   private _version: string;
+  private _lastCursor: string = "default";
   private _debug: Debug;
 
   constructor(name: string, version: string, width: number, height: number) {
@@ -215,7 +216,12 @@ export class Board {
    * @param cursor
    */
   changeCursor(cursor: string) {
+    this._lastCursor = document.body.style.cursor;
     document.body.style.cursor = cursor;
+  }
+
+  restoreCursor() {
+    document.body.style.cursor = this._lastCursor;
   }
 
   /**
