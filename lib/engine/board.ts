@@ -73,7 +73,6 @@ export class Board {
       lastUpdate = now;
       this.step.update(delta);
       this.step.draw();
-      this.step.debug();
     }, 1000/this._config.game.FPS);
   }
 

@@ -62,27 +62,4 @@ export abstract class GameStep {
       });
     }
   }
-
-  debug() {
-    this.board.entities.forEach((entity: Entity) => {
-      if (entity.visible) {
-        // Reset style
-        this.board.resetStyles();
-        // Save context
-        this.board.ctx.save();
-        // Translate context
-
-        entity.debug(this.board.ctx);
-
-        // Rotate context from entity center
-        this.board.ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
-        this.board.ctx.rotate(entity.rotate);
-        this.board.ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
-        // Draw entity
-        entity.draw(this.board.ctx as CanvasRenderingContext2D);
-        // Restore context
-        this.board.ctx.restore();
-      }
-    });
-  }
 }
