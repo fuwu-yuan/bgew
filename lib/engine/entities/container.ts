@@ -57,12 +57,22 @@ export class Container extends Entity {
               entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
             }
           }
+          if (event.type === "click") {
+            if (!entity.focus) {
+              entity.focus = true;
+            }
+          }
           entity.dispatcher.dispatch(event.type, event);
         }else {
           if (event.type === "mousemove") {
             if (entity.hovered) {
               entity.hovered = false;
               entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
+            }
+          }
+          if (event.type === "click") {
+            if (entity.focus) {
+              entity.focus = false;
             }
           }
         }

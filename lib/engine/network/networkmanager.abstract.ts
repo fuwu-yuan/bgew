@@ -14,7 +14,7 @@ export abstract class AbstractNetworkManager {
     protected _apiUrl: string;
     protected api;
     protected board: Board;
-    protected ws: WebSocketSubject<any>|null = null;
+    protected webSocketSubject: WebSocketSubject<any>|null = null;
     protected msgsPromises: {
         timestamp: number,
         promise: {
@@ -40,27 +40,45 @@ export abstract class AbstractNetworkManager {
         console.log("• API URL: " + this.apiUrl);
     }
 
+    abstract ping(): Promise<string>;
+
     /**
-     * You must initialize this.ws as a WebSocketSubject<SocketMessage>
+     * You must initialize this.webSocketSubject as a WebSocketSubject<SocketMessage>
      * @param uid
      */
     abstract joinRoom(uid: string): Promise<Network.Response>;
+
+    /**
+     * Disconnect from websocket
+     */
+    leaveRoom() {
+        if (this.webSocketSubject) {
+            this.webSocketSubject.unsubscribe();
+        }
+    }
 
     /**
      * Call your API to create a new websocket server
      *
      * @param name
      * @param limit
+     * @param data
      * @param autojoinroom
      */
-    abstract createRoom(name: string, limit: number, autojoinroom: boolean): Promise<Network.Response>;
+    abstract createRoom(name: string, limit: number, data: {}, autojoinroom: boolean): Promise<Network.Response>;
 
     /**
      * Add some data to your server
      *
      * @param data
+     * @param merge
      */
     abstract setRoomData(data: any, merge: boolean): Promise<Network.Response>;
+
+    /**
+     * Get data from server
+     */
+    abstract getRoomData(): Promise<Network.Response>;
 
     /**
      * Close a server
@@ -93,7 +111,7 @@ export abstract class AbstractNetworkManager {
         let promise = new Promise<SocketMessage>((resolve, reject) => {
             this.msgsPromises.push({timestamp: timestamp, promise: {resolve: resolve, reject: reject}});
         });
-        this.ws?.next({id: timestamp, msg: message});
+        this.webSocketSubject?.next({id: timestamp, msg: message});
         return promise;
     }
 
@@ -116,8 +134,8 @@ export abstract class AbstractNetworkManager {
     private checkPageReload() {
         window.addEventListener("beforeunload", (event) => {
             console.log("The page is refreshing");
-            if (this.ws) {
-                this.ws.unsubscribe();
+            if (this.webSocketSubject) {
+                this.webSocketSubject.unsubscribe();
             }
         });
     }

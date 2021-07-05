@@ -20,6 +20,7 @@ export abstract class Entity {
   private _visible: boolean = true;
   public hovered: boolean = false;
   private _disabled: boolean = false;
+  private _focus: boolean = false;
   //private _path: Path2D;
 
   constructor(x: number, y: number, width: number, height: number) {
@@ -142,6 +143,15 @@ export abstract class Entity {
     this.dispatcher.on(event, callback);
   }
 
+  /**
+   * Listen mouse event on this entity
+   * @param event An event from this list : keyup, keydown, keypress, all
+   * @param callback
+   */
+  onKeyboardEvent(event: "keyup" | "keydown" | "keypress" | "all", callback: (event: KeyboardEvent) => void) {
+    this.dispatcher.on(event, callback);
+  }
+
   getPath2D(): Path2D {
     let path = new Path2D();
     path.rect(this.x, this.y, this.width, this.height);
@@ -169,7 +179,12 @@ export abstract class Entity {
   abstract draw(ctx: CanvasRenderingContext2D): void;
   abstract update(delta: number): void;
 
+  /*********************
+   * Getters & Setters *
+   *********************/
   get disabled(): boolean { return this._disabled; }
   set disabled(value: boolean) { this._disabled = value; }
+  get focus(): boolean { return this._focus; }
+  set focus(value: boolean) { this._focus = value; }
   //get path() { return this._path; }
 }

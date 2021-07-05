@@ -1,24 +1,31 @@
 import {Entity} from "../entity";
 
 export class Button extends Entity {
-  private _text: string;
-
+  protected _text: string;
+  // Normal
   private _strokeColor: string = "rgba(255,255,255, 1.0)";
   private _fillColor: string = "rgba(0, 0, 0, 0.0)";
+  private _fontSize: number = 20;
+  private _fontColor: string = "rgba(255,255,255, 1.0)";
+  // Hover
   private _hoverStrokeColor: string = "";
   private _hoverFillColor: string = "";
+  private _hoverFontSize: number = 0;
+  private _hoverFontColor: string = "";
+  private _hoverCursor: string = "";
+  // Click
   private _clickStrokeColor: string = "";
   private _clickFillColor: string = "";
-  private _fontSize: number = 20;
-  private _hoverFontSize: number = 0;
   private _clickFontSize: number = 0;
-  private _fontColor: string = "rgba(255,255,255, 1.0)";
-  private _hoverFontColor: string = "";
   private _clickFontColor: string = "";
-  private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 0, tr: 0, br: 0, bl: 0};
-  private _hoverCursor: string = "";
   private _clicked: boolean = false;
-
+  // Disabled
+  private _disabledStrokeColor: string = "";
+  private _disabledFillColor: string = "";
+  private _disabledFontSize: number = 0;
+  private _disabledFontColor: string = "";
+  // Other
+  private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 0, tr: 0, br: 0, bl: 0};
 
   constructor(x: number, y: number, width: number, height: number, text: string = "") {
     super(x, y, width, height);
@@ -65,7 +72,10 @@ export class Button extends Entity {
     //set color
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;
-    if (this.clicked) {
+    if (this.disabled) {
+      if (this.disabledStrokeColor !== "") ctx.strokeStyle = this.disabledStrokeColor;
+      if (this.disabledFillColor !== "") ctx.fillStyle = this.disabledFillColor;
+    }else if (this.clicked) {
       if (this.clickStrokeColor !== "") ctx.strokeStyle = this.clickStrokeColor;
       if (this.clickFillColor !== "") ctx.fillStyle = this.clickFillColor;
     }else if (this.hovered) {
@@ -94,7 +104,10 @@ export class Button extends Entity {
     var fontSize = this.fontSize;
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fontColor;
-    if (this.clicked) {
+    if (this.disabled) {
+      if (this.disabledFontSize > 0) fontSize = this.disabledFontSize;
+      if (this.disabledFontColor !== "") ctx.fillStyle = this.disabledFontColor;
+    }else if (this.clicked) {
       if (this.clickFontSize > 0) fontSize = this.clickFontSize;
       if (this.clickFontColor !== "") ctx.fillStyle = this.clickFontColor;
     }else if (this.hovered) {
@@ -150,4 +163,12 @@ export class Button extends Entity {
   set radius(value: { tl: number; tr: number; br: number; bl: number }) { this._radius = value; }
   get hoverCursor(): string { return this._hoverCursor; }
   set hoverCursor(value: string) { this._hoverCursor = value; }
+  get disabledStrokeColor(): string { return this._disabledStrokeColor; }
+  set disabledStrokeColor(value: string) { this._disabledStrokeColor = value; }
+  get disabledFillColor(): string { return this._disabledFillColor; }
+  set disabledFillColor(value: string) { this._disabledFillColor = value; }
+  get disabledFontSize(): number { return this._disabledFontSize; }
+  set disabledFontSize(value: number) { this._disabledFontSize = value; }
+  get disabledFontColor(): string { return this._disabledFontColor; }
+  set disabledFontColor(value: string) { this._disabledFontColor = value; }
 }

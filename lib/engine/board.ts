@@ -267,12 +267,17 @@ export class Board {
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
     this.entities.forEach(function (entity: Entity) {
-      if (entity.disabled) return;
+      if (entity.disabled || !entity.visible) return;
       if (entity.intersect(x, y, event)) {
         if (event.type === "mousemove") {
           if (!entity.hovered) {
             entity.hovered = true;
             entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
+          }
+        }
+        if (event.type === "click") {
+          if (!entity.focus) {
+            entity.focus = true;
           }
         }
         entity.dispatcher.dispatch(event.type, event);
@@ -283,6 +288,26 @@ export class Board {
             entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
           }
         }
+        if (event.type === "click") {
+          if (entity.focus) {
+            entity.focus = false;
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * On keyboard event, catch it and dispatch right event to entities
+   *
+   * @param event
+   * @private
+   */
+  private onKeyboardEvent(event: KeyboardEvent) {
+    this.entities.forEach(function (entity: Entity) {
+      if (entity.disabled || !entity.visible) return;
+      if (entity.focus) {
+        entity.dispatcher.dispatch(event.type, event);
       }
     });
   }
@@ -307,17 +332,15 @@ export class Board {
   private initEvents() {
     this.canvas.addEventListener('click', this.onMouseEvent.bind(this));
     this.canvas.addEventListener('dblclick', this.onMouseEvent.bind(this));
-
     this.canvas.addEventListener('contextmenu', this.onMouseEvent.bind(this));
-
     this.canvas.addEventListener('mousedown', this.onMouseEvent.bind(this));
     this.canvas.addEventListener('mouseup', this.onMouseEvent.bind(this));
-
     this.canvas.addEventListener('mouseenter', this.onMouseEvent.bind(this));
     this.canvas.addEventListener('mouseleave', this.onMouseEvent.bind(this));
-
     this.canvas.addEventListener('mousemove', this.onMouseEvent.bind(this));
 
-    //TODO keyboard events
+    window.addEventListener("keyup", this.onKeyboardEvent.bind(this));
+    window.addEventListener("keydown", this.onKeyboardEvent.bind(this));
+    window.addEventListener("keypress", this.onKeyboardEvent.bind(this));
   }
 }

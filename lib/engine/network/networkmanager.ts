@@ -6,8 +6,17 @@ import {AxiosResponse} from 'axios';
 import {AbstractNetworkManager} from "./networkmanager.abstract";
 
 export class NetworkManager extends AbstractNetworkManager {
-
   public roomuid: string = "";
+
+  /**
+   * @override
+   */
+  ping() {
+    return this.api.get<any, AxiosResponse<string>>('/ping')
+        .then(function(response) {
+          return response.data;
+        });
+  }
 
   /**
    * @override
@@ -15,9 +24,8 @@ export class NetworkManager extends AbstractNetworkManager {
   joinRoom(uid: string): Promise<Response> {
     if (this.roomuid === "") this.roomuid = uid;
     return new Promise<Response>((resolve, reject) => {
-      try {
-        this.ws = webSocket(this.wsUrl + uid);
-        this.ws.subscribe(
+      this.webSocketSubject = webSocket(this.wsUrl + uid);
+      this.webSocketSubject.subscribe(
           (msg: SocketMessage) => {
             switch (msg.code) {
               case "player_join":
@@ -44,25 +52,22 @@ export class NetworkManager extends AbstractNetworkManager {
             if (err instanceof CloseEvent) {
               this.board.step.onConnectionClosed();
             }
-            console.log(err);
-            reject();
+            reject(err);
           },
           this.board.step.onConnectionClosed
-        );
-      }catch(e) {
-        reject(e);
-      }
+      );
     });
   }
 
   /**
    * @override
    */
-  createRoom(name: string, limit = 0, autojoinroom = true): Promise<Response> {
+  createRoom(name: string, limit = 0, data: {}, autojoinroom = true): Promise<Response> {
     console.log("Creating room " + name);
     return this.api.post<any, AxiosResponse<Response>>('/room', {
       game: this.board.name,
       version: this.board.version,
+      data: data,
       name: name,
       limit: limit
     }).then((response) => {
@@ -90,6 +95,13 @@ export class NetworkManager extends AbstractNetworkManager {
     }).then(function(response) {
       return response.data;
     });
+  }
+
+  getRoomData(): Promise<Response> {
+    return this.api.get<any, AxiosResponse<any>>('/room/data/'+this.roomuid)
+        .then(function(response) {
+          return response.data;
+        });
   }
 
   /**
