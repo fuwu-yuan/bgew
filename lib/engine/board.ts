@@ -6,6 +6,7 @@ import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 import {Container} from "./entities";
 import {Debug} from "../classes/Debug";
 import * as workerTimers from 'worker-timers';
+import {Dispatcher} from "../classes/Dispatcher";
 
 /**
  * The borad is the main part of your Game
@@ -25,6 +26,7 @@ export class Board {
   private _version: string;
   private _lastCursor: string = "default";
   private _debug: Debug;
+  private dispatcher = new Dispatcher();
 
   constructor(name: string, version: string, width: number, height: number) {
     // @ts-ignore
@@ -271,8 +273,9 @@ export class Board {
    * @param event
    * @private
    */
-  private onMouseEvent(event: MouseEvent) {
+  private dispatchMouseEvent(event: MouseEvent) {
     event.preventDefault();
+    this.dispatcher.dispatch(event.type, event);
     const rect = this.canvas.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
@@ -313,13 +316,32 @@ export class Board {
    * @param event
    * @private
    */
-  private onKeyboardEvent(event: KeyboardEvent) {
+  private dispatchKeyboardEvent(event: KeyboardEvent) {
+    this.dispatcher.dispatch(event.type, event);
     this.entities.forEach(function (entity: Entity) {
       if (entity.disabled || !entity.visible) return;
       if (entity.focus) {
         entity.dispatcher.dispatch(event.type, event);
       }
     });
+  }
+
+  /**
+   * Listen mouse event on this entity
+   * @param event An event from this list : click, dblclick, contextmenu, mousedown, mouseup, mouseenter, mouseleave, mousemove, all
+   * @param callback
+   */
+  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void) {
+    this.dispatcher.on(event, callback);
+  }
+
+  /**
+   * Listen mouse event on this entity
+   * @param event An event from this list : keyup, keydown, keypress, all
+   * @param callback
+   */
+  onKeyboardEvent(event: "keyup" | "keydown" | "keypress" | "all", callback: (event: KeyboardEvent) => void) {
+    this.dispatcher.on(event, callback);
   }
 
   get width() {
@@ -340,17 +362,17 @@ export class Board {
    * @private
    */
   private initEvents() {
-    this.canvas.addEventListener('click', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('dblclick', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('contextmenu', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('mousedown', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseup', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseenter', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseleave', this.onMouseEvent.bind(this));
-    this.canvas.addEventListener('mousemove', this.onMouseEvent.bind(this));
+    this.canvas.addEventListener('click', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('dblclick', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('contextmenu', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('mousedown', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('mouseup', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('mouseenter', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('mousemove', this.dispatchMouseEvent.bind(this));
 
-    window.addEventListener("keyup", this.onKeyboardEvent.bind(this));
-    window.addEventListener("keydown", this.onKeyboardEvent.bind(this));
-    window.addEventListener("keypress", this.onKeyboardEvent.bind(this));
+    window.addEventListener("keyup", this.dispatchKeyboardEvent.bind(this));
+    window.addEventListener("keydown", this.dispatchKeyboardEvent.bind(this));
+    window.addEventListener("keypress", this.dispatchKeyboardEvent.bind(this));
   }
 }
