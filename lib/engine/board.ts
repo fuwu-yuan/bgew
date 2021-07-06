@@ -5,6 +5,7 @@ import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 import {Container} from "./entities";
 import {Debug} from "../classes/Debug";
+import * as workerTimers from 'worker-timers';
 
 /**
  * The borad is the main part of your Game
@@ -26,6 +27,14 @@ export class Board {
   private _debug: Debug;
 
   constructor(name: string, version: string, width: number, height: number) {
+    // @ts-ignore
+    window.setTimeout = workerTimers.setTimeout;
+    // @ts-ignore
+    window.clearTimeout = workerTimers.clearTimeout;
+    // @ts-ignore
+    window.setInterval = workerTimers.setInterval;
+    // @ts-ignore
+    window.clearInterval = workerTimers.clearInterval;
     this._name = name;
     this._version = version;
     this._networkManager = new NetworkManager(this);
@@ -67,6 +76,7 @@ export class Board {
   start() {
     this.step.onEnter({});
     let lastUpdate = (new Date()).getTime();
+
     this.runningInterval = setInterval(() => {
       let now = (new Date()).getTime();
       let delta = now - lastUpdate;

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "start": "npm run watch",
     "prepublish": "npm run build",
     "build": "tsc",
     "watch": "tsc -w",
@@ -26,6 +27,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "rxjs": "^7.1.0"
+    "rxjs": "^7.1.0",
+    "worker-timers": "^7.0.33"
   }
 }
