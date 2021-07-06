@@ -1,6 +1,5 @@
 import {Board} from "../board";
 import {WebSocketSubject} from "rxjs/webSocket";
-import {environment} from "../../../environments/environment";
 import {default as axios} from "axios";
 import * as Network from '.';
 import {SocketMessage} from ".";
@@ -10,8 +9,6 @@ import {SocketMessage} from ".";
  */
 export abstract class AbstractNetworkManager {
 
-    protected _wsUrl: string;
-    protected _apiUrl: string;
     protected api;
     protected board: Board;
     protected webSocketSubject: WebSocketSubject<any>|null = null;
@@ -25,9 +22,12 @@ export abstract class AbstractNetworkManager {
 
     constructor(board: Board) {
         this.board = board;
-        this._wsUrl = environment.wsUrl;
-        this._apiUrl = environment.apiUrl;
+        this.api = axios.create();
         this.checkPageReload();
+        this.init();
+    }
+
+    private init() {
         this.api = axios.create({
             baseURL: this.apiUrl,
             timeout: 1000,
@@ -140,20 +140,6 @@ export abstract class AbstractNetworkManager {
         });
     }
 
-    get wsUrl() {
-        return this._wsUrl;
-    }
-
-    set wsUrl(value: string) {
-        this._wsUrl = value;
-    }
-
-    get apiUrl() {
-        return this._apiUrl;
-    }
-
-    set apiUrl(value: string) {
-        this._apiUrl = value;
-        this.api.defaults.baseURL = this.apiUrl;
-    }
+    abstract get wsUrl(): string;
+    abstract get apiUrl(): string;
 }

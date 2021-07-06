@@ -151,4 +151,12 @@ export class NetworkManager extends AbstractNetworkManager {
       return response.data;
     });
   }
+
+  get apiUrl(): string {
+    return "https://bgew.stevecohen.fr/api";
+  }
+
+  get wsUrl(): string {
+    return "wss://bgew.stevecohen.fr/";
+  }
 }
