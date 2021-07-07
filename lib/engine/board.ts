@@ -28,7 +28,7 @@ export class Board {
   private _debug: Debug;
   private dispatcher = new Dispatcher();
 
-  constructor(name: string, version: string, width: number, height: number) {
+  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null) {
     // @ts-ignore
     window.setTimeout = workerTimers.setTimeout;
     // @ts-ignore
@@ -44,20 +44,19 @@ export class Board {
     this._debug = new Debug();
     this._config.board.size.width = width;
     this.config.board.size.height = height;
-    this.canvas = this.createCanvasElem();
+    this.canvas = this.createCanvasElem(gameElement);
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     this.defaultStrokeStyle = this.ctx.strokeStyle;
     this.defaultFillStyle = this.ctx.fillStyle;
     this.initEvents();
   }
 
-  private createCanvasElem() {
+  private createCanvasElem(gameElement: HTMLElement|null = null) {
     const elem = document.createElement('canvas');
     elem.width = this.config.board.size.width;
     elem.height = this.config.board.size.height;
     elem.style.cssText = 'background:' + this.config.board.background;
-    let gameContainer = document.getElementById("game");
-    (gameContainer !== null ? gameContainer : document.body).appendChild(elem);
+    (gameElement !== null ? gameElement : document.body).appendChild(elem);
 
     return elem;
   }
