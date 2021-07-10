@@ -13,6 +13,8 @@ export abstract class Entity {
   private _zoom: number = 1;
   protected _x: number;
   protected _y: number;
+  protected _absX: number;
+  protected _absY: number;
   protected _width: number;
   protected _height: number;
   protected _dispatcher = new Dispatcher();
@@ -26,9 +28,10 @@ export abstract class Entity {
   constructor(x: number, y: number, width: number, height: number) {
     this._x = x;
     this._y = y;
+    this._absX = x;
+    this._absY = y;
     this._width = width;
     this._height = height;
-    //this._path = new Path2D();
   }
 
   get board(): Board | null {
@@ -45,6 +48,8 @@ export abstract class Entity {
 
   set translate(translate: {x: number, y: number}) {
     this._translate = translate;
+    this._updateAbsX();
+    this._updateAbsY();
   }
 
   get rotate(): number {
@@ -70,6 +75,7 @@ export abstract class Entity {
 
   set x(value) {
     this._x = value;
+    this._updateAbsX();
   }
 
   get y() {
@@ -78,6 +84,23 @@ export abstract class Entity {
 
   set y(value) {
     this._y = value;
+    this._updateAbsY();
+  }
+
+  get absX() {
+    return this._absX;
+  }
+
+  get absY() {
+    return this._absY;
+  }
+
+  _updateAbsX(parentAbsX: number = 0) {
+    this._absX = this.x + this.translate.x + parentAbsX;
+  }
+
+  _updateAbsY(parentAbsY: number = 0) {
+    this._absY = this.y + this.translate.y + parentAbsY;
   }
 
   get height(): number {

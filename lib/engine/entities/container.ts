@@ -93,6 +93,8 @@ export class Container extends Entity {
     if (this.board && !entity.board) {
       entity.board = this.board;
     }
+    entity._updateAbsX(this._absX);
+    entity._updateAbsY(this._absY);
     this._entities.push(entity);
   }
 
@@ -166,30 +168,6 @@ export class Container extends Entity {
     return count;
   }
 
-  debug(ctx: CanvasRenderingContext2D) {
-    //super.draw(ctx);
-    ctx.translate(this.x, this.y);
-    this.entities.forEach((entity: Entity) => {
-        // Reset style
-        this.board?.resetStyles();
-        // Save context
-        ctx.save();
-        // Translate context
-        ctx.translate(entity.translate.x, entity.translate.y);
-        // Rotate context from entity center
-        ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
-        ctx.rotate(entity.rotate);
-        ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
-        // Draw entity
-        if (this.board?.debug.skeleton) {
-          this.board.ctx.strokeStyle = "red";
-          this.board.ctx.stroke(this.getPath2D());
-        }
-        // Restore context
-        ctx.restore();
-    });
-  }
-
   set board(value: Board | null) {
     super.board = value;
     for (const entity of this.entities) {
@@ -197,9 +175,22 @@ export class Container extends Entity {
     }
   }
 
-
   get board(): Board | null {
     return super.board;
+  }
+
+  _updateAbsX(parentAbsX: number = 0) {
+    this._absX = this.x + this.translate.x + parentAbsX;
+    for (const entity of this.entities) {
+      entity._updateAbsX(this._absX);
+    }
+  }
+
+  _updateAbsY(parentAbsY: number = 0) {
+    this._absY = this.y + this.translate.y + parentAbsY;
+    for (const entity of this.entities) {
+      entity._updateAbsX(this._absX);
+    }
   }
 
   /*********************
