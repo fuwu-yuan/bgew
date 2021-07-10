@@ -27,6 +27,7 @@ export class Board {
   private _lastCursor: string = "default";
   private _debug: Debug;
   private dispatcher = new Dispatcher();
+  private _scale: number = 1;
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null) {
     // @ts-ignore
@@ -275,9 +276,9 @@ export class Board {
   private dispatchMouseEvent(event: MouseEvent) {
     event.preventDefault();
     this.dispatcher.dispatch(event.type, event);
-    const rect = this.canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    const rect = this.canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * (1/this.scale);
+    const y = (event.clientY - rect.top) * (1/this.scale);
     this.entities.forEach(function (entity: Entity) {
       if (entity.disabled || !entity.visible) return;
       if (entity.intersect(x, y, event)) {
@@ -349,6 +350,14 @@ export class Board {
 
   get height() {
     return this.config.board.size.height;
+  }
+
+  get scale(): number {
+    return this._scale;
+  }
+
+  set scale(value: number) {
+    this._scale = value;
   }
 
   get debug(): Debug {

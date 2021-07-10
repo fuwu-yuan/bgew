@@ -110,6 +110,7 @@ export abstract class Entity {
   set height(value: number) {
     this._height = value;
   }
+
   get width(): number {
     return this._width*this._zoom;
   }
