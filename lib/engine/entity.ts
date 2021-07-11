@@ -34,6 +34,10 @@ export abstract class Entity {
     this._height = height;
   }
 
+  init(board: Board) {
+    this.board = board;
+  }
+
   get board(): Board | null {
     return this._board;
   }
@@ -97,10 +101,16 @@ export abstract class Entity {
 
   _updateAbsX(parentAbsX: number = 0) {
     this._absX = this.x + this.translate.x + parentAbsX;
+    if (this.board) {
+      this._absX *= this.board.scale;
+    }
   }
 
   _updateAbsY(parentAbsY: number = 0) {
     this._absY = this.y + this.translate.y + parentAbsY;
+    if (this.board) {
+      this._absY *= this.board.scale;
+    }
   }
 
   get height(): number {
@@ -201,7 +211,14 @@ export abstract class Entity {
   }
 
   abstract draw(ctx: CanvasRenderingContext2D): void;
-  abstract update(delta: number): void;
+  onDestroy(): void {
+
+  }
+
+  update(delta: number) {
+    this._updateAbsX();
+    this._updateAbsY();
+  }
 
   /*********************
    * Getters & Setters *

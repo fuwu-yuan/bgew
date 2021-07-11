@@ -28,6 +28,7 @@ export class Board {
   private _debug: Debug;
   private dispatcher = new Dispatcher();
   private _scale: number = 1;
+  private _gameHTMLElement: HTMLElement = document.body;
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null) {
     // @ts-ignore
@@ -45,6 +46,7 @@ export class Board {
     this._debug = new Debug();
     this._config.board.size.width = width;
     this.config.board.size.height = height;
+    this._gameHTMLElement = gameElement !== null ? gameElement : this._gameHTMLElement;
     this.canvas = this.createCanvasElem(gameElement);
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     this.defaultStrokeStyle = this.ctx.strokeStyle;
@@ -57,7 +59,7 @@ export class Board {
     elem.width = this.config.board.size.width;
     elem.height = this.config.board.size.height;
     elem.style.cssText = 'background:' + this.config.board.background;
-    (gameElement !== null ? gameElement : document.body).appendChild(elem);
+    this._gameHTMLElement.appendChild(elem);
 
     return elem;
   }
@@ -195,7 +197,7 @@ export class Board {
    * @param entity
    */
   addEntity(entity: Entity) {
-    entity.board = this;
+    entity.init(this);
     this.entities.push(entity);
   }
 
@@ -239,6 +241,9 @@ export class Board {
    * Remove all entities and clear the board
    */
   reset() {
+    for (const entity of this.entities) {
+      entity.onDestroy();
+    }
     this.entities = [];
     this.clear()
     document.body.style.cursor = "default";
@@ -362,6 +367,10 @@ export class Board {
 
   get debug(): Debug {
     return this._debug;
+  }
+
+  get gameHTMLElement(): HTMLElement {
+    return this._gameHTMLElement;
   }
 
   /**

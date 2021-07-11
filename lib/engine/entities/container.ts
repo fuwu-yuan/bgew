@@ -20,6 +20,13 @@ export class Container extends Entity {
     this.onMouseEvent("mouseleave", this.onMouseLeave.bind(this));
   }
 
+  init(board: Board) {
+    super.init(board);
+    for (const entity of this.entities) {
+      entity.init(board);
+    }
+  }
+
   private onMouseDown(event: MouseEvent) {
     this._clicked = true;
   }
@@ -91,10 +98,8 @@ export class Container extends Entity {
 
   public addEntity(entity: Entity) {
     if (this.board && !entity.board) {
-      entity.board = this.board;
+      entity.init(this.board);
     }
-    entity._updateAbsX(this._absX);
-    entity._updateAbsY(this._absY);
     this._entities.push(entity);
   }
 
@@ -151,12 +156,6 @@ export class Container extends Entity {
     });
   }
 
-  update(delta: number): void {
-    for (const entity of this.entities) {
-      entity.update(delta);
-    }
-  }
-
   countEntities() {
     let count = 0;
     count = this.entities.length;
@@ -181,6 +180,9 @@ export class Container extends Entity {
 
   _updateAbsX(parentAbsX: number = 0) {
     this._absX = this.x + this.translate.x + parentAbsX;
+    if (this.board) {
+      this._absX *= this.board.scale;
+    }
     for (const entity of this.entities) {
       entity._updateAbsX(this._absX);
     }
@@ -188,8 +190,19 @@ export class Container extends Entity {
 
   _updateAbsY(parentAbsY: number = 0) {
     this._absY = this.y + this.translate.y + parentAbsY;
+    if (this.board) {
+      this._absY *= this.board.scale;
+    }
     for (const entity of this.entities) {
       entity._updateAbsX(this._absX);
+    }
+  }
+
+  update(delta: number): void {
+    this._updateAbsX();
+    this._updateAbsY();
+    for (const entity of this.entities) {
+      entity.update(delta);
     }
   }
 

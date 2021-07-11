@@ -103,7 +103,7 @@ export class Square extends Entity {
   }
 
   update(delta: number): void {
-
+    super.update(delta);
   }
 
   /*********************

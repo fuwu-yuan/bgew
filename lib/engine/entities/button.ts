@@ -128,9 +128,8 @@ export class Button extends Entity {
   }
 
   update(delta: number): void {
-
+    super.update(delta);
   }
-
 
   /*********************
    * Getters & Setters *

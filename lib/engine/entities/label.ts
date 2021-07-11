@@ -98,7 +98,7 @@ export class Label extends Entity {
   }
 
   update(delta: number): void {
-
+    super.update(delta);
   }
 
   /*********************
