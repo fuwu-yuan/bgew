@@ -90,6 +90,7 @@ export class InputText extends Button {
      * @param ctx
      */
     draw(ctx: CanvasRenderingContext2D): void {
+        super.draw(ctx);
         //set color
         ctx.strokeStyle = this.strokeColor;
         ctx.fillStyle = this.fillColor;

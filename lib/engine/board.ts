@@ -85,6 +85,8 @@ export class Board {
       let now = (new Date()).getTime();
       let delta = now - lastUpdate;
       lastUpdate = now;
+      this.canvas.width = this.config.board.size.width * this.scale;
+      this.canvas.height = this.config.board.size.height * this.scale;
       this.step.update(delta);
       this.step.draw();
     }, 1000/this._config.game.FPS);

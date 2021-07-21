@@ -49,6 +49,7 @@ export class Label extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    super.draw(ctx);
     //text options
     var fontSize = this.fontSize;
     ctx.fillStyle = this.fontColor;

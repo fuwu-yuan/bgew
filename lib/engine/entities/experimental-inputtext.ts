@@ -68,6 +68,7 @@ export class ExperimentalInputtext extends Entity {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
+        super.draw(ctx);
     }
 
     onDestroy() {
@@ -78,17 +79,19 @@ export class ExperimentalInputtext extends Entity {
     update(delta: number) {
         super.update(delta);
 
-        this._input.style.left = this.x-1+"px";
-        this._input.style.top = this.y-1+"px";
-        this._input.style.width = this.width-2 + "px";
-        this._input.style.height = this.height-2 + "px";
+        if (this.board) {
+            this._input.style.left = this.x*this.board.scale-1+"px";
+            this._input.style.top = this.y*this.board.scale-1+"px";
+            this._input.style.width = this.width*this.board.scale-2 + "px";
+            this._input.style.height = this.height*this.board.scale-2 + "px";
 
-        this._input.style.border = `solid 1px ${this._strokeColor}`;
-        this._input.style.background = this._fillColor;
-        this._input.style.fontSize = this._fontSize + "px";
-        this._input.style.color = this._fontColor;
+            this._input.style.border = `solid ${this.board.scale}px ${this._strokeColor}`;
+            this._input.style.background = this._fillColor;
+            this._input.style.fontSize = this._fontSize*this.board.scale + "px";
+            this._input.style.color = this._fontColor;
 
-        this._input.style.padding = `${this._padding.top}px ${this._padding.right}px ${this._padding.bottom}px ${this._padding.left}px`;
+            this._input.style.padding = `${this._padding.top*this.board.scale}px ${this._padding.right*this.board.scale}px ${this._padding.bottom*this.board.scale}px ${this._padding.left*this.board.scale}px`;
+        }
 
         //TODO Focus / Hover / Click / Disabled
     }

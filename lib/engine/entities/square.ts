@@ -69,6 +69,7 @@ export class Square extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    super.draw(ctx);
     //super.draw(ctx);
     //set color
     ctx.strokeStyle = this.strokeColor;

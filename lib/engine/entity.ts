@@ -210,7 +210,11 @@ export abstract class Entity {
     this.zoom = 1;
   }
 
-  abstract draw(ctx: CanvasRenderingContext2D): void;
+  draw(ctx: CanvasRenderingContext2D): void {
+    if (this.board) {
+      ctx.scale(this.board.scale, this.board.scale);
+    }
+  }
   onDestroy(): void {
 
   }

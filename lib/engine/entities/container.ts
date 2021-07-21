@@ -135,19 +135,21 @@ export class Container extends Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(this.x, this.y);
+    if (this.board) {
+      ctx.translate(this.x * this.board.scale, this.y * this.board.scale);
+    }
     this.entities.forEach((entity: Entity) => {
-      if (entity.visible) {
+      if (entity.visible && this.board) {
         // Reset style
-        this.board?.resetStyles();
+        this.board.resetStyles();
         // Save context
         ctx.save();
         // Translate context
-        ctx.translate(entity.translate.x, entity.translate.y);
+        ctx.translate(entity.translate.x * this.board.scale, entity.translate.y * this.board.scale);
         // Rotate context from entity center
-        ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
+        ctx.translate(entity.x * this.board.scale + entity.width * this.board.scale/2, entity.y * this.board.scale + entity.height * this.board.scale/2);
         ctx.rotate(entity.rotate);
-        ctx.translate((entity.x + entity.width/2)*-1, (entity.y + entity.height/2)*-1)
+        ctx.translate((entity.x * this.board.scale + entity.width * this.board.scale/2)*-1, (entity.y * this.board.scale + entity.height * this.board.scale/2)*-1)
         // Draw entity
         entity.draw(ctx);
         // Restore context
