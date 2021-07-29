@@ -13,6 +13,6 @@ export class BoardConfig {
       width: 800,
       height: 800
     },
-    background: "#eee"
+    background: "transparent"
   };
 }
