@@ -30,7 +30,7 @@ export class Board {
   private _scale: number = 1;
   private _gameHTMLElement: HTMLElement = document.body;
 
-  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null) {
+  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent") {
     // @ts-ignore
     window.setTimeout = workerTimers.setTimeout;
     // @ts-ignore
@@ -46,19 +46,21 @@ export class Board {
     this._debug = new Debug();
     this._config.board.size.width = width;
     this.config.board.size.height = height;
+    this.config.board.background = background;
     this._gameHTMLElement = gameElement !== null ? gameElement : this._gameHTMLElement;
-    this.canvas = this.createCanvasElem(gameElement);
+    this.canvas = this.createCanvasElem();
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     this.defaultStrokeStyle = this.ctx.strokeStyle;
     this.defaultFillStyle = this.ctx.fillStyle;
     this.initEvents();
   }
 
-  private createCanvasElem(gameElement: HTMLElement|null = null) {
+  private createCanvasElem() {
     const elem = document.createElement('canvas');
     elem.width = this.config.board.size.width;
     elem.height = this.config.board.size.height;
-    elem.style.cssText = 'background:' + this.config.board.background;
+    elem.style.background = this.config.board.background;
+    this._gameHTMLElement.style.position = "relative";
     this._gameHTMLElement.appendChild(elem);
 
     return elem;
@@ -183,10 +185,11 @@ export class Board {
     if (this.step) {
       this.step.onLeave();
     }
-    this.reset();
     this.step = this.steps[step];
     if (this.step) {
+      this.reset();
       this.step.onEnter(data);
+      this.step.draw();
     }else {
       console.error("No step found with name '" + step + "'");
     }
@@ -201,6 +204,17 @@ export class Board {
   addEntity(entity: Entity) {
     entity.init(this);
     this.entities.push(entity);
+  }
+
+  /**
+   * Add multiple entities
+   * This function will call addEntity(entity) for each entity of the array
+   * @param entities
+   */
+  addEntities(entities: Entity[]) {
+    for (const entity of entities) {
+      this.addEntity(entity);
+    }
   }
 
   /**
