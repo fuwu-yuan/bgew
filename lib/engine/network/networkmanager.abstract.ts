@@ -132,7 +132,7 @@ export abstract class AbstractNetworkManager {
      * @private
      */
     private checkPageReload() {
-        window.addEventListener("beforeunload", (event) => {
+        window.addEventListener("unload", (event) => {
             console.log("The page is refreshing");
             if (this.webSocketSubject) {
                 this.webSocketSubject.unsubscribe();
