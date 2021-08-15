@@ -2,7 +2,6 @@ import {webSocket} from "rxjs/webSocket";
 import {Room} from './room';
 import {Response} from "./response";
 import {SocketMessage} from "./socketMessage";
-import {AxiosResponse} from 'axios';
 import {AbstractNetworkManager} from "./networkmanager.abstract";
 
 export class NetworkManager extends AbstractNetworkManager {
@@ -11,8 +10,8 @@ export class NetworkManager extends AbstractNetworkManager {
   /**
    * @override
    */
-  ping() {
-    return this.api.get<any, AxiosResponse<string>>('/ping')
+  ping(): Promise<string> {
+    return this.api.get('/ping')
         .then(function(response) {
           return response.data;
         });
@@ -64,7 +63,7 @@ export class NetworkManager extends AbstractNetworkManager {
    */
   createRoom(name: string, limit = 0, data: {}, autojoinroom = true): Promise<Response> {
     console.log("Creating room " + name);
-    return this.api.post<any, AxiosResponse<Response>>('/room', {
+    return this.api.post('/room', {
       game: this.board.name,
       version: this.board.version,
       data: data,
@@ -89,7 +88,7 @@ export class NetworkManager extends AbstractNetworkManager {
    * @override
    */
   setRoomData(data: any, merge: boolean = false): Promise<Response> {
-    return this.api.post<any, AxiosResponse<Response>>('/room/data/'+this.roomuid, {
+    return this.api.post('/room/data/'+this.roomuid, {
       data: data,
       merge: merge
     }).then(function(response) {
@@ -98,7 +97,7 @@ export class NetworkManager extends AbstractNetworkManager {
   }
 
   getRoomData(): Promise<Response> {
-    return this.api.get<any, AxiosResponse<any>>('/room/data/'+this.roomuid)
+    return this.api.get('/room/data/'+this.roomuid)
         .then(function(response) {
           return response.data;
         });
@@ -108,7 +107,7 @@ export class NetworkManager extends AbstractNetworkManager {
    * @override
    */
   closeRoom(uid: string, close: boolean = true): Promise<Response> {
-    return this.api.post<any, AxiosResponse<Response>>('/room/close/'+this.roomuid, {
+    return this.api.post('/room/close/'+this.roomuid, {
       close: close,
     }).then(function(response) {
       return response.data;
@@ -126,7 +125,7 @@ export class NetworkManager extends AbstractNetworkManager {
    * @override
    */
   getOpenedRooms(): Promise<{status:string,servers:Room[]}> {
-    return this.api.get<any, AxiosResponse<{status:string,servers:Room[]}>>('/room', {
+    return this.api.get('/room', {
       params: {
         open: true,
         game: this.board.name,
@@ -141,7 +140,7 @@ export class NetworkManager extends AbstractNetworkManager {
    * @override
    */
   getClosedRooms(): Promise<{status:string,servers:Room[]}> {
-    return this.api.get<any, AxiosResponse<{status:string,servers:Room[]}>>('/room', {
+    return this.api.get('/room', {
       params: {
         open: false,
         game: this.board.name,

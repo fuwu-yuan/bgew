@@ -43,7 +43,7 @@ export class Container extends Entity {
     //this.board?.changeCursor("default");
   }
 
-  intersect(x: number, y: number, event: MouseEvent, depth = 1): boolean {
+  intersect(x: number, y: number, event: Event|null = null, depth = 1): boolean {
     /*return x >= (this.x + this.translate.x) && x <= (this.x + this.translate.x) + this.width &&
       y >= (this.y + this.translate.y) && y <= (this.y + this.translate.y) + this.height;*/
     this.board?.ctx.translate(this.translate.x, this.translate.y);
@@ -58,26 +58,28 @@ export class Container extends Entity {
       this.entities.forEach((entity: Entity) => {
         if (entity.disabled) return;
         if (entity.intersect(x, y, event, depth+1)) {
-          if (event.type === "mousemove") {
+          if (event && event.type === "mousemove") {
             if (!entity.hovered) {
               entity.hovered = true;
               entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
             }
           }
-          if (event.type === "click") {
+          if (event && event.type === "click") {
             if (!entity.focus) {
               entity.focus = true;
             }
           }
-          entity.dispatcher.dispatch(event.type, event);
+          if (event) {
+            entity.dispatcher.dispatch(event.type, event);
+          }
         }else {
-          if (event.type === "mousemove") {
+          if (event && event.type === "mousemove") {
             if (entity.hovered) {
               entity.hovered = false;
               entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
             }
           }
-          if (event.type === "click") {
+          if (event && event.type === "click") {
             if (entity.focus) {
               entity.focus = false;
             }
@@ -120,6 +122,28 @@ export class Container extends Entity {
     for (const entity of entities) {
       this.removeEntity(entity);
     }
+  }
+
+  /**
+   * Find an entity by id
+   * @param id
+   * @param recursive search recursively in entity that can contains other entities (like Entities.Container)
+   * @return Entity found entity with the given id or undefined if not found
+   */
+  findEntity(id: string, recursive = false): Entity|undefined {
+    let entity = this.entities.find((entity) => {
+      return entity.id === id;
+    });
+    if (typeof entity === "undefined" && recursive) {
+      for (const e of this.entities) {
+        if (e instanceof Container) {
+          entity = e.findEntity(id, recursive);
+          if (typeof entity !== 'undefined')
+            break;
+        }
+      }
+    }
+    return entity;
   }
 
   public clear() {
@@ -201,8 +225,7 @@ export class Container extends Entity {
   }
 
   update(delta: number): void {
-    this._updateAbsX();
-    this._updateAbsY();
+    super.update(delta);
     for (const entity of this.entities) {
       entity.update(delta);
     }
@@ -214,4 +237,5 @@ export class Container extends Entity {
 
   get entities(): Entity[] { return this._entities; }
   set entities(value: Entity[]) { this._entities = value; }
+
 }

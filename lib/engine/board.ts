@@ -1,6 +1,6 @@
 import {Entity} from "./entity";
 import {GameStep} from "./gamestep";
-import {NetworkManager} from "./network/networkmanager";
+import {NetworkManager} from "./network";
 import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 import {Container} from "./entities";
@@ -28,7 +28,7 @@ export class Board {
   private _debug: Debug;
   private dispatcher = new Dispatcher();
   private _scale: number = 1;
-  private _gameHTMLElement: HTMLElement = document.body;
+  private _gameHTMLElement: HTMLElement;
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent") {
     // @ts-ignore
@@ -44,10 +44,10 @@ export class Board {
     this._networkManager = new NetworkManager(this);
     this._config = new BoardConfig();
     this._debug = new Debug();
-    this._config.board.size.width = width;
+    this.config.board.size.width = width;
     this.config.board.size.height = height;
     this.config.board.background = background;
-    this._gameHTMLElement = gameElement !== null ? gameElement : this._gameHTMLElement;
+    this._gameHTMLElement = gameElement !== null ? gameElement : document.body;
     this.canvas = this.createCanvasElem();
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     this.defaultStrokeStyle = this.ctx.strokeStyle;
@@ -91,7 +91,7 @@ export class Board {
       this.canvas.height = this.config.board.size.height * this.scale;
       this.step.update(delta);
       this.step.draw();
-    }, 1000/this._config.game.FPS);
+    }, Math.floor(1000/this._config.game.FPS));
   }
 
   /**
@@ -215,6 +215,28 @@ export class Board {
     for (const entity of entities) {
       this.addEntity(entity);
     }
+  }
+
+  /**
+   * Find an entity by id
+   * @param id
+   * @param recursive search recursively in entity that can contains other entities (like Entities.Container)
+   * @return Entity found entity with the given id or undefined if not found
+   */
+  findEntity(id: string, recursive = false): Entity|undefined {
+    let entity = this.entities.find((entity) => {
+      return entity.id === id;
+    });
+    if (typeof entity === "undefined" && recursive) {
+      for (const e of this.entities) {
+        if (e instanceof Container) {
+          entity = e.findEntity(id, recursive);
+          if (typeof entity !== 'undefined')
+            break;
+        }
+      }
+    }
+    return entity;
   }
 
   /**
@@ -371,6 +393,16 @@ export class Board {
 
   get height() {
     return this.config.board.size.height;
+  }
+
+  set width(value: number) {
+    this.config.board.size.width = value;
+    this.canvas.width = value;
+  }
+
+  set height(value: number) {
+    this.config.board.size.height = value;
+    this.canvas.height = value;
   }
 
   get scale(): number {

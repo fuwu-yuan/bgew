@@ -1,6 +1,6 @@
 import {Entity} from "../entity";
 
-export class Square extends Entity {
+export class Rectangle extends Entity {
   private _strokeColor: string = "rgba(0,0,0, 1.0)";
   private _fillColor: string = "rgba(255, 255, 255, 1.0)";
   private _hoverStrokeColor: string = "rgba(0,0,0, 1.0)";

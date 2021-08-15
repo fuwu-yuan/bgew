@@ -1,7 +1,7 @@
 export class DispatcherEvent {
 
-  private eventName: string;
-  private callbacks: ((data:any) => void)[];
+  public eventName: string;
+  public callbacks: ((data:any) => void)[];
 
   constructor(eventName: string) {
     this.eventName = eventName;

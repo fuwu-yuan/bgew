@@ -2,7 +2,7 @@ import {DispatcherEvent} from "./DispatcherEvent";
 
 export class Dispatcher {
 
-  private events: any;
+  public events: { [key: string]: DispatcherEvent;};
 
   constructor() {
     this.events = {};
