@@ -100,19 +100,21 @@ export class Board {
    * Start the game loop (update and draw entities)
    */
   start() {
-    var stats = new Stats();
-    stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild( stats.dom );
+    if (this.debug.stats) {
+      var stats = new Stats();
+      stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+      document.body.appendChild( stats.dom );
+    }
     this.step.onEnter({});
     this.gameloop = new Gameloop();
     this.gameloopId = this.gameloop.setGameLoop((delta) => {
-      stats.begin();
+      if (this.debug.stats) stats.begin();
       this.canvas.width = this.config.board.size.width * this.scale;
       this.canvas.height = this.config.board.size.height * this.scale;
       this.step.update(delta*1000);
       this.collisionSystem.update();
       this.step.draw();
-      stats.end();
+      if (this.debug.stats) stats.end();
       //console.log(Math.round(1000/(delta*1000)) + " FPS");
     }, 1000 / this._config.game.FPS)
   }
