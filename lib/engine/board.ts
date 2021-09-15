@@ -7,6 +7,11 @@ import {Container} from "./entities";
 import {Debug} from "../classes/Debug";
 import * as workerTimers from 'worker-timers';
 import {Dispatcher} from "../classes/Dispatcher";
+import {Gameloop} from "../classes/Gameloop";
+import {Timer} from "./timer";
+import {Collisions, Result} from "detect-collisions";
+import {Sound} from "./sound";
+const Stats = require("stats.js");
 
 /**
  * The borad is the main part of your Game
@@ -15,7 +20,8 @@ export class Board {
   private _canvas: HTMLCanvasElement | undefined;
   entities: Entity[] = [];
   private readonly _ctx: CanvasRenderingContext2D;
-  private runningInterval: any;
+  private gameloop: Gameloop|null = null;
+  private gameloopId: number|null = null;
   private readonly _config;
   private readonly defaultStrokeStyle: string | CanvasGradient | CanvasPattern;
   private readonly defaultFillStyle: string | CanvasGradient | CanvasPattern;
@@ -29,8 +35,12 @@ export class Board {
   private dispatcher = new Dispatcher();
   private _scale: number = 1;
   private _gameHTMLElement: HTMLElement;
+  private _gravity: number = 0;
+  private _collisionSystem = new Collisions();
+  private _collisionResult = this._collisionSystem.createResult();
+  private _sounds: {[key: string]: Sound} = {};
 
-  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent") {
+  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false) {
     // @ts-ignore
     window.setTimeout = workerTimers.setTimeout;
     // @ts-ignore
@@ -48,20 +58,30 @@ export class Board {
     this.config.board.size.height = height;
     this.config.board.background = background;
     this._gameHTMLElement = gameElement !== null ? gameElement : document.body;
-    this.canvas = this.createCanvasElem();
+    this.canvas = this.createCanvasElem(enableHIDPI);
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    if (enableHIDPI) {
+      this.ctx.scale(this.getPixelRatio(), this.getPixelRatio());
+    }
     this.defaultStrokeStyle = this.ctx.strokeStyle;
     this.defaultFillStyle = this.ctx.fillStyle;
     this.initEvents();
   }
 
-  private createCanvasElem() {
+  private createCanvasElem(enableHIDPI: boolean) {
     const elem = document.createElement('canvas');
     elem.width = this.config.board.size.width;
     elem.height = this.config.board.size.height;
     elem.style.background = this.config.board.background;
     this._gameHTMLElement.style.position = "relative";
     this._gameHTMLElement.appendChild(elem);
+
+    if (enableHIDPI) {
+      elem.width = this.config.board.size.width * this.getPixelRatio();
+      elem.height = this.config.board.size.height * this.getPixelRatio();
+      elem.style.width = this.config.board.size.width + "px";
+      elem.style.height = this.config.board.size.height + "px";
+    }
 
     return elem;
   }
@@ -80,10 +100,25 @@ export class Board {
    * Start the game loop (update and draw entities)
    */
   start() {
+    var stats = new Stats();
+    stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild( stats.dom );
     this.step.onEnter({});
-    let lastUpdate = (new Date()).getTime();
+    this.gameloop = new Gameloop();
+    this.gameloopId = this.gameloop.setGameLoop((delta) => {
+      stats.begin();
+      this.canvas.width = this.config.board.size.width * this.scale;
+      this.canvas.height = this.config.board.size.height * this.scale;
+      this.step.update(delta*1000);
+      this.collisionSystem.update();
+      this.step.draw();
+      stats.end();
+      //console.log(Math.round(1000/(delta*1000)) + " FPS");
+    }, 1000 / this._config.game.FPS)
+  }
 
-    this.runningInterval = setInterval(() => {
+  /*private loop(lastUpdate: number, lastLoopDuration: number = 0) {
+    setTimeout(() => {
       let now = (new Date()).getTime();
       let delta = now - lastUpdate;
       lastUpdate = now;
@@ -91,14 +126,18 @@ export class Board {
       this.canvas.height = this.config.board.size.height * this.scale;
       this.step.update(delta);
       this.step.draw();
-    }, Math.floor(1000/this._config.game.FPS));
-  }
+      let after = (new Date()).getTime();
+      this.loop(lastUpdate, after-now);
+    }, (1000/this._config.game.FPS));
+  }*/
 
   /**
    * Stop the game loop (game will freeze)
    */
   stop() {
-    clearInterval(this.runningInterval);
+    if (this.gameloop && this.gameloopId) {
+      this.gameloop.clearGameLoop(this.gameloopId);
+    }
   }
 
   /**
@@ -204,6 +243,7 @@ export class Board {
   addEntity(entity: Entity) {
     entity.init(this);
     this.entities.push(entity);
+    this.collisionSystem.insert(entity.body);
   }
 
   /**
@@ -247,7 +287,11 @@ export class Board {
   removeEntity(entity: Entity) {
     const index: number = this.entities.indexOf(entity, 0);
     if (index > -1) {
+      if (this.entities[index] instanceof Container) {
+        (this.entities[index] as Container).removeEntities((this.entities[index] as Container).entities);
+      }
       this.entities.splice(index, 1);
+      this.collisionSystem.remove(entity.body);
     }
   }
 
@@ -266,13 +310,46 @@ export class Board {
    * Change the cursor
    * @param cursor
    */
-  changeCursor(cursor: string) {
+  changeCursor(cursor: "auto" | "inherit" | "crosshair" | "default" | "help" | "move" | "pointer" | "progress" | "text" | "wait" | "e-resize" | "ne-resize" | "nw-resize" | "n-resize" | "se-resize" | "sw-resize" | "s-resize" | "w-resize" | "none" | "context-menu" | "cell" | "vertical-text" | "alias" | "copy" | "no-drop" | "not-allowed" | "ew-resize" | "ns-resize" | "nesw-resize" | "nwse-resize" | "col-resize" | "row-resize" | "all-scroll" | "grab" | "grabbing" | "zoom-in" | "zoom-out" | string) {
     this._lastCursor = document.body.style.cursor;
     document.body.style.cursor = cursor;
   }
 
   restoreCursor() {
     document.body.style.cursor = this._lastCursor;
+  }
+
+  /**
+   * Register a sound to play it later using function {@link playSound}
+   * @param src assets or url src
+   * @param name register name
+   */
+  registerSound(name: string, src: string) {
+    this._sounds[name] = new Sound(name, src);
+  }
+
+  /**
+   * Play a sound previously registered using function {@link registerSound}
+   * @param name the registered sound name
+   * @param repeat play the sound again at the end
+   * @param volume volume to play the sound (between 0.0 and 1.0)
+   */
+  playSound(name: string, repeat: boolean = false, volume: number = 1.0) {
+    if (typeof this._sounds[name] !== 'undefined') {
+      setTimeout(() => {
+        this._sounds[name].play(repeat, volume);
+      }, 10);
+    }else {
+      console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
+    }
+  }
+
+  stopSound(name: string, fadeOut: boolean = false, fadeTime: number = 1000) {
+    if (typeof this._sounds[name] !== 'undefined') {
+      this._sounds[name].stop(fadeOut, fadeTime);
+    }else {
+      console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
+    }
   }
 
   /**
@@ -283,6 +360,7 @@ export class Board {
       entity.onDestroy();
     }
     this.entities = [];
+    this._collisionSystem = new Collisions();
     this.clear()
     document.body.style.cursor = "default";
   }
@@ -318,17 +396,17 @@ export class Board {
    */
   private dispatchMouseEvent(event: MouseEvent) {
     event.preventDefault();
-    this.dispatcher.dispatch(event.type, event);
     const rect = this.canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left) * (1/this.scale);
     const y = (event.clientY - rect.top) * (1/this.scale);
+    this.dispatcher.dispatch(event.type, event, x, y);
     this.entities.forEach(function (entity: Entity) {
       if (entity.disabled || !entity.visible) return;
       if (entity.intersect(x, y, event)) {
         if (event.type === "mousemove") {
           if (!entity.hovered) {
             entity.hovered = true;
-            entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
+            entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event), x, y);
           }
         }
         if (event.type === "click") {
@@ -341,7 +419,7 @@ export class Board {
         if (event.type === "mousemove") {
           if (entity.hovered) {
             entity.hovered = false;
-            entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
+            entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event), x, y);
           }
         }
         if (event.type === "click") {
@@ -374,7 +452,7 @@ export class Board {
    * @param event An event from this list : click, dblclick, contextmenu, mousedown, mouseup, mouseenter, mouseleave, mousemove, all
    * @param callback
    */
-  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void) {
+  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent, x: number, y: number) => void) {
     this.dispatcher.on(event, callback);
   }
 
@@ -413,12 +491,85 @@ export class Board {
     this._scale = value;
   }
 
+  get gravity(): number {
+    return this._gravity;
+  }
+
+  set gravity(value: number) {
+    this._gravity = value;
+  }
+
   get debug(): Debug {
     return this._debug;
   }
 
   get gameHTMLElement(): HTMLElement {
     return this._gameHTMLElement;
+  }
+
+  getEntitiesAt(x: number|null = null, y: number|null = null) {
+    let entities = [];
+    for (const entity of this.entities) {
+      if (y === null && x !== null) {
+        if (entity.absX <= x && entity.absX + entity.width >= x) {
+          entities.push(entity);
+        }
+      }else if (x === null && y !== null) {
+        if (entity.absY <= y && entity.absY + entity.height >= y) {
+          entities.push(entity);
+        }
+      }else if (x !== null && y !== null) {
+        if (entity.intersect(x, y) && entities.indexOf(entity) === -1) {
+          entities.push(entity);
+        }
+      }
+    }
+    return entities;
+  }
+
+  getEntitiesIn(x1: number, y1: number, x2: number, y2: number) {
+    let entities: Entity[] = [];
+    for (const entity of this.entities) {
+      if (entity instanceof Container) {
+        entities = entities.concat((entity as Container).getEntitiesIn(x1, y1, x2, y2));
+      }else if (entity.absX < x2 &&
+          entity.absX + entity.width > x1 &&
+          entity.absY < y2 &&
+          entity.height + entity.absY > y1) {
+        entities.push(entity);
+      }
+    }
+    return entities;
+  }
+
+  getPixelRatio() {
+    return (window.devicePixelRatio || 1);
+  };
+
+  /**
+   * Shortcut to add timer to current GameStep {@link GameStep.addTimer}
+   * @param time
+   * @param end
+   * @param repeat
+   */
+  addTimer(time: number, end: () => void, repeat: boolean = true): Timer {
+    return this.step.addTimer(time, end, repeat);
+  }
+
+  /**
+   * Shortcut to remove timer from current GameStep {@link GameStep.removeTimer}
+   * @param timer
+   */
+  removeTimer(timer: Timer) {
+   this.step.removeTimer(timer);
+  }
+
+  get collisionSystem(): Collisions {
+    return this._collisionSystem;
+  }
+
+  get collisionResult(): Result {
+    return this._collisionResult;
   }
 
   /**

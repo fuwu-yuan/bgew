@@ -1,14 +1,14 @@
 import {Entity} from "../entity";
 
 export class Rectangle extends Entity {
-  private _strokeColor: string = "rgba(0,0,0, 1.0)";
-  private _fillColor: string = "rgba(255, 255, 255, 1.0)";
-  private _hoverStrokeColor: string = "rgba(0,0,0, 1.0)";
-  private _hoverFillColor: string = "rgba(255, 255, 255, 1.0)";
-  private _clickStrokeColor: string = "rgba(0,0,0, 1.0)"
-  private _clickFillColor: string = "rgba(255, 255, 255, 1.0)"
-  private _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 0, tr: 0, br: 0, bl: 0};
-  private _clicked: boolean = false;
+  protected _strokeColor: string = "rgba(0,0,0, 1.0)";
+  protected _fillColor: string = "rgba(255, 255, 255, 1.0)";
+  protected _hoverStrokeColor: string = "rgba(0,0,0, 1.0)";
+  protected _hoverFillColor: string = "rgba(255, 255, 255, 1.0)";
+  protected _clickStrokeColor: string = "rgba(0,0,0, 1.0)"
+  protected _clickFillColor: string = "rgba(255, 255, 255, 1.0)"
+  protected _radius : {tl: number, tr: number, br: number, bl: number} = {tl: 0, tr: 0, br: 0, bl: 0};
+  protected _clicked: boolean = false;
 
   constructor(x: number,
               y: number,
@@ -70,7 +70,6 @@ export class Rectangle extends Entity {
 
   draw(ctx: CanvasRenderingContext2D): void {
     super.draw(ctx);
-    //super.draw(ctx);
     //set color
     ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;

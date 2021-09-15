@@ -3,10 +3,10 @@ import {Entity} from "../entity";
 export class Button extends Entity {
   protected _text: string;
   // Normal
-  private _strokeColor: string = "rgba(255,255,255, 1.0)";
-  private _fillColor: string = "rgba(0, 0, 0, 0.0)";
+  private _strokeColor: string = "rgba(0,0,0, 1.0)";
+  private _fillColor: string = "rgba(255, 255, 255, 0.0)";
   private _fontSize: number = 20;
-  private _fontColor: string = "rgba(255,255,255, 1.0)";
+  private _fontColor: string = "rgba(0,0,0, 1.0)";
   // Hover
   private _hoverStrokeColor: string = "";
   private _hoverFillColor: string = "";
@@ -98,8 +98,6 @@ export class Button extends Entity {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    //ctx.strokeRect(this.x, this.y, this.width, this.height);
-    //ctx.fillRect(this.x, this.y, this.width, this.height);
 
     //text options
     var fontSize = this.fontSize;

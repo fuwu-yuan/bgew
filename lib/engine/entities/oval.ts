@@ -1,4 +1,7 @@
 import {Entity} from "../entity";
+import {Body} from "detect-collisions";
+import {Circle} from "../../collisionSystem";
+import {Board} from "../board";
 
 export class Oval extends Entity {
   private _strokeColor: string = "rgba(0,0,0, 1.0)";
@@ -13,8 +16,8 @@ export class Oval extends Entity {
 
   /**
    *
-   * @param x Oval center X
-   * @param y Oval center Y
+   * @param centerX Oval center X
+   * @param centerY Oval center Y
    * @param radiusX Orizontal radius
    * @param radiusY Vertical radius
    * @param strokeColor
@@ -24,8 +27,8 @@ export class Oval extends Entity {
    * @param clickStrokeColor
    * @param clickFillColor
    */
-  constructor(x: number,
-              y: number,
+  constructor(centerX: number,
+              centerY: number,
               radiusX: number,
               radiusY: number,
               strokeColor: string|null = null,
@@ -35,7 +38,7 @@ export class Oval extends Entity {
               clickStrokeColor: string|null = null,
               clickFillColor: string|null = null,
               ) {
-    super(x, y, radiusX*2, radiusY*2);
+    super(centerX, centerY, radiusX*2, radiusY*2);
     this.radiusX = radiusX;
     this.radiusY = radiusY;
     this.onMouseEvent("mousedown", this.onMouseDown.bind(this));
@@ -56,6 +59,11 @@ export class Oval extends Entity {
     if (hoverFillColor) { this.hoverFillColor = hoverFillColor; }
     if (clickStrokeColor) { this.clickStrokeColor = clickStrokeColor; }
     if (clickFillColor) { this.clickFillColor = clickFillColor; }
+  }
+
+  init(board: Board) {
+    super.init(board);
+    this._body = new Circle(this, this.absX, this.absY, this.radiusX);
   }
 
   private onMouseDown(event: MouseEvent) {
@@ -109,6 +117,9 @@ export class Oval extends Entity {
 
   update(delta: number): void {
     super.update(delta);
+    this._body.x = this.absX;
+    this._body.y = this.absY;
+    (this._body as Circle).radius = this.radiusX;
   }
 
   /*********************

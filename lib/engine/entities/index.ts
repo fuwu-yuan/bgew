@@ -3,7 +3,8 @@ export * from './label';
 export * from './rectangle';
 export * from './container';
 export * from './inputtext';
-export * from './experimental-inputtext';
 export * from './image';
 export * from './oval'
 export * from './spritesheetimage';
+export * from './checkbox';
+export * from './line';

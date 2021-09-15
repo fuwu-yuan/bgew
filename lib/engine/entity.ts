@@ -1,6 +1,8 @@
 import {Dispatcher} from "../classes/Dispatcher";
 import {Board} from "./board";
-import {Oval} from "./entities";
+import {Container} from "./entities";
+import {Polygon, Circle, Point} from "../collisionSystem";
+import {Body, Result} from "detect-collisions";
 
 /**
  * The most important part of your game
@@ -10,38 +12,54 @@ import {Oval} from "./entities";
 export abstract class Entity {
   private static __AI: number = 0;
 
-  private _id: string;
-  protected _translate: {x: number, y:number} = {x: 0, y:0};
+  private _parent: Container|null = null;
+  protected _id: string;
   protected _rotate: number = 0;
-  private _zoom: number = 1;
+  protected _zoom: number = 1;
   protected _x: number;
   protected _y: number;
-  private _speedX = 0;
-  private _speedY = 0;
-  protected _absX: number;
-  protected _absY: number;
+  private _directionX: number = 0;
+  private _directionY: number = 0;
+  private _speed: number = 0;
   protected _width: number;
   protected _height: number;
   protected _dispatcher = new Dispatcher();
   protected _board: Board | null = null;
-  private _visible: boolean = true;
+  protected _visible: boolean = true;
   public hovered: boolean = false;
-  private _disabled: boolean = false;
-  private _focus: boolean = false;
-  //private _path: Path2D;
+  protected _disabled: boolean = false;
+  protected _focus: boolean = false;
+  protected _solid: boolean = false;
+  protected _weight: number = 0;
+  protected _gravitySpeed: number = 0;
+  protected _falling: boolean = false;
+  protected _body: Body;
 
   protected constructor(x: number, y: number, width: number, height: number, id: string = "") {
     this._id = id !== "" ? id : ('@entity-'+Entity.__AI++);
     this._x = x;
     this._y = y;
-    this._absX = x;
-    this._absY = y;
     this._width = width;
     this._height = height;
+    this._body = new Point(this);
   }
 
   init(board: Board) {
     this.board = board;
+    this._body = new Polygon(this, this.absX, this.absY, [
+      [0, 0],
+      [this.absX+this.width, 0],
+      [this.absX+this.width, this.absY+this.height],
+      [0, this.absY+this.height]
+    ]);
+  }
+
+  get parent(): Container | null {
+    return this._parent;
+  }
+
+  set parent(value: Container | null) {
+    this._parent = value;
   }
 
   get board(): Board | null {
@@ -50,16 +68,6 @@ export abstract class Entity {
 
   set board(value: Board | null) {
     this._board = value;
-  }
-
-  get translate() {
-    return this._translate;
-  }
-
-  set translate(translate: {x: number, y: number}) {
-    this._translate = translate;
-    this._updateAbsX();
-    this._updateAbsY();
   }
 
   get rotate(): number {
@@ -83,13 +91,20 @@ export abstract class Entity {
     return this._id;
   }
 
+  /**
+   * BE AWARE : if you change entity id after registered event listeners, events will not be triggered anymore for this entity, you will need to remove event listeners and register it again.
+   * @param id
+   */
+  set id(id: string) {
+    this._id = id;
+  }
+
   get x() {
     return this._x;
   }
 
   set x(value) {
     this._x = value;
-    this._updateAbsX();
   }
 
   get y() {
@@ -98,45 +113,93 @@ export abstract class Entity {
 
   set y(value) {
     this._y = value;
-    this._updateAbsY();
   }
 
   get speedX(): number {
-    return this._speedX;
-  }
-
-  set speedX(value: number) {
-    this._speedX = value;
+    return this.speed * this.directionX;
   }
 
   get speedY(): number {
-    return this._speedY;
+    return this.speed * this.directionY;
   }
 
-  set speedY(value: number) {
-    this._speedY = value;
+  get speed(): number {
+    return this._speed;
   }
 
-  get absX() {
-    return this._absX;
+  set speed(value: number) {
+    this._speed = value;
   }
 
-  get absY() {
-    return this._absY;
+  /**
+   * Get directionX in radian
+   */
+  get directionX(): number {
+    return this._directionX;
   }
 
-  _updateAbsX(parentAbsX: number = 0) {
-    this._absX = this.x + this.translate.x + parentAbsX;
-    if (this.board) {
-      this._absX *= this.board.scale;
-    }
+  /**
+   * Set directionX in radian
+   * @param value in radian
+   */
+  set directionX(value: number) {
+    this._directionX = value;
   }
 
-  _updateAbsY(parentAbsY: number = 0) {
-    this._absY = this.y + this.translate.y + parentAbsY;
-    if (this.board) {
-      this._absY *= this.board.scale;
-    }
+  /**
+   * Get directionY in radian
+   */
+  get directionY(): number {
+    return this._directionY;
+  }
+
+  /**
+   * Set directionY in radian
+   * @param value in radian
+   */
+  set directionY(value: number) {
+    this._directionY = value;
+  }
+
+  /**
+   * Get direction in radian<br>
+   * To get degrees use {@link Entity.directionDegrees}
+   */
+  get direction() {
+    return Math.atan(this.directionY / this.directionX);
+  }
+
+  /**
+   * Set direction in radian<br>
+   * To use degrees use {@link Entity.directionDegrees}
+   * @param value in radian
+   */
+  set direction(value: number) {
+    this.directionX = Math.cos(value);
+    this.directionY = Math.sin(value);
+  }
+
+  /**
+   * Get the direction in degrees
+   */
+  get directionDegrees() {
+    return this.direction * 180 / Math.PI;
+  }
+
+  /**
+   * Set the direction in degrees
+   * @param value in degrees
+   */
+  set directionDegrees(value: number) {
+    this.direction = value / 180 * Math.PI;
+  }
+
+  get absX(): number {
+    return this.x + (this.parent ? this.parent.absX : 0);
+  }
+
+  get absY(): number {
+    return this.y + (this.parent ? this.parent.absY : 0);
   }
 
   get height(): number {
@@ -156,7 +219,7 @@ export abstract class Entity {
   }
 
   get visible(): boolean {
-    return this._visible;
+    return this._visible && (!this.parent || this.parent.visible);
   }
 
   set visible(value: boolean) {
@@ -167,10 +230,31 @@ export abstract class Entity {
     return this._dispatcher;
   }
 
+  get solid(): boolean {
+    return this._solid;
+  }
+
+  set solid(value: boolean) {
+    this._solid = value;
+  }
+
+  get weight(): number {
+    return this._weight;
+  }
+
+  set weight(value: number) {
+    this._weight = value;
+  }
+
+  get falling(): boolean {
+    return this._falling;
+  }
+
+  set falling(value: boolean) {
+    this._falling = value;
+  }
+
   intersect(x: number, y: number, event: Event|null = null, depth = 1): boolean {
-    /*return x >= (this.x + this.translate.x) && x <= (this.x + this.translate.x) + this.width &&
-      y >= (this.y + this.translate.y) && y <= (this.y + this.translate.y) + this.height;*/
-    this.board?.ctx.translate(this.translate.x, this.translate.y);
     // Rotate context from entity center
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
     this.board?.ctx.rotate(this.rotate);
@@ -182,22 +266,50 @@ export abstract class Entity {
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
     this.board?.ctx.rotate(this.rotate*-1);
     this.board?.ctx.translate((this.x + this.width/2)*-1, (this.y + this.height/2)*-1)
-    // UNDO Translate context
-    this.board?.ctx.translate(this.translate.x*-1, this.translate.y*-1);
     return result;
   }
 
   intersectWithEntity(entity: Entity): boolean {
-    if (this.board && entity.getPath2D()) {
-      for (let y = 0; y < this.board.height; y += 4) {
-        for (let x = 0; x < this.board.width; x += 4) {
-          if (this.intersect(x, y, new MouseEvent("none")) && entity.intersect(x, y, new MouseEvent("none"))) {
-            return true;
+    /*let thisAbsY = this.absY;
+    let thisAbsX = this.absX;
+    if (this instanceof Oval) {
+      thisAbsY = this.absY - (this as Oval).radiusY;
+      thisAbsX = this.absX - (this as Oval).radiusX;
+    }
+
+    let otherAbsY = entity.absY;
+    let otherAbsX = entity.absX;
+    if (entity instanceof Oval) {
+      otherAbsY = entity.absY - (entity as Oval).radiusY;
+      otherAbsX = entity.absX - (entity as Oval).radiusX;
+    }
+
+    return thisAbsX < otherAbsX + entity.width &&
+        thisAbsX + this.width > otherAbsX &&
+        thisAbsY < otherAbsY + entity.height &&
+        this.height + thisAbsY > otherAbsY;*/
+    return this.body.collides(entity.body, this.board?.collisionResult);
+  }
+
+  /**
+   * Check if entity intersect with any of the given entities
+   * @param entities Entities to check collision
+   * @return An array containing intersecting entities
+   */
+  public intersectWithEntities(entities: Entity[]): Entity[] {
+    let intersect: Entity[] = [];
+    if (this.board) {
+      for (const entity of entities) {
+        if (entity === this) continue;
+        if (this.intersectWithEntity(entity)) {
+          if (entity instanceof Container) {
+            intersect = intersect.concat(this.intersectWithEntities((entity as Container).entities));
           }
+          intersect.push(entity);
         }
       }
     }
-    return false;
+    return intersect;
   }
 
   /**
@@ -224,7 +336,7 @@ export abstract class Entity {
    * @param y
    * @param callback
    */
-  onIntersect(x: number, y: number, callback: (data: {entity: Entity, point: {x: number, y: number}}) => void) {
+  onIntersect(x: number, y: number, callback: (entity: Entity, point: {x: number, y: number}) => void) {
     this.dispatcher.on(`intersect-${x}-${y}`, callback);
   }
 
@@ -233,8 +345,12 @@ export abstract class Entity {
    * @param entity
    * @param callback
    */
-  onIntersectWithEntity(entity: Entity, callback: (data: {entity: Entity, collisionWith: Entity}) => void) {
+  onIntersectWithEntity(entity: Entity, callback: (entity: Entity, collisionWith: Entity, result: Result) => void) {
     this.dispatcher.on(`entityintersect-${entity.id}`, callback);
+  }
+
+  onIntersectWithAnyEntity(callback: (entity: Entity, collisionWith: Entity, result: Result) => void) {
+    this.dispatcher.on("anyentityintersect", callback);
   }
 
   getPath2D(): Path2D {
@@ -243,6 +359,10 @@ export abstract class Entity {
     path.closePath();
 
     return path;
+  }
+
+  get body() {
+    return this._body;
   }
 
   debug(ctx: CanvasRenderingContext2D) {
@@ -262,6 +382,12 @@ export abstract class Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    if (this.board?.debug.collision) {
+      ctx.strokeStyle = '#FF0000';
+      ctx.beginPath();
+      this.board?.collisionSystem.draw(ctx);
+      ctx.stroke();
+    }
     if (this.board) {
       ctx.scale(this.board.scale, this.board.scale);
     }
@@ -270,42 +396,73 @@ export abstract class Entity {
 
   }
 
-  update(delta: number) {
-    this.x += this.speedX / (1000/delta);
-    this.y += this.speedY / (1000/delta);
-    this._updateAbsX();
-    this._updateAbsY();
-    for (const event of Object.keys(this.dispatcher.events)) {
-      if (event.startsWith("intersect-")) {
-        let params = event.split("-");
-        let x = parseInt(params[1]);
-        let y = parseInt(params[2]);
-        if (this.intersect(x, y)) {
-          this.dispatcher.dispatch(event, {entity: this, point: {x:x, y:y}});
+  private updateGravity(delta: number) {
+    /*if (this.board && this.board.gravity > 0 && this._weight > 0) {
+      this.falling = true;
+      this._gravitySpeed += this.board.gravity;
+      this.speedY += this._gravitySpeed;
+      if (this.speedY > 0) {
+        let willY = this.absY+this.height+(this.speedY*delta/1000)+1
+        let willHit = this.board.getEntitiesIn(this.absX+1, willY, this.absX+this.width-1, willY).find((e) => {return e.solid;});
+        if (typeof willHit !== 'undefined' && willHit.absY <= this.absY + this.height) {
+          this._gravitySpeed = 0;
+          this.speed = 0;
+          this.y = willHit.y - this.height;
+          this.falling = false;
         }
-      }else if (event.startsWith("entityintersect-")) {
-        let params = event.split("-");
-        let otherEntityId = params.slice(1).join('-');
-        if (this.board) {
-          let otherEntity = this.board.findEntity(otherEntityId);
-          if (typeof otherEntity !== 'undefined') {
-            let collide = false;
-            let thisAbsY = this instanceof Oval ? this.absY - (this as Oval).radiusY : this.absY;
-            let thisAbsX = this instanceof Oval ? this.absX - (this as Oval).radiusX : this.absX;
-            for (let y = thisAbsY; y < thisAbsY + this.height; y+=10) {
-              for (let x = thisAbsX; x < thisAbsX + this.width; x+=10) {
-                if (this.intersect(x, y) && otherEntity.intersect(x, y)) {
-                  this.dispatcher.dispatch(event, {entity: this, collisionWith: otherEntity});
-                  collide = true;
-                }
-                if (collide) break;
+      }
+    }*/
+  }
+
+  private updateSpeed(delta: number) {
+    this.x += this.speedX * delta/1000;
+    this.y += this.speedY * delta/1000;
+  }
+
+  private checkCollisions(delta: number) {
+    if (this.board) {
+      for (const event of Object.keys(this.dispatcher.events)) {
+        // Intersection with point
+        if (event.startsWith("intersect-")) {
+          let params = event.split("-");
+          let x = parseInt(params[1]);
+          let y = parseInt(params[2]);
+          if (this.intersect(x, y)) {
+            this.dispatcher.dispatch(event, /*entity:*/ this, /*point:*/ {x:x, y:y});
+          }
+
+          // Intersection with entity
+        }else if (event.startsWith("entityintersect-")) {
+          let params = event.split("-");
+          let otherEntityId = params.slice(1).join('-');
+          if (this.board) {
+            let otherEntity = this.board.findEntity(otherEntityId);
+            if (typeof otherEntity !== 'undefined') {
+              if (this.intersectWithEntity(otherEntity)) {
+                this.dispatcher.dispatch(event, /*entity:*/ this, /*collisionWith:*/ otherEntity, /*result:*/ this.board.collisionResult);
               }
-              if (collide) break;
+            }
+          }
+
+          // Intersection with any entity
+        }else if (event === "anyentityintersect") {
+          const potentials = this.body.potentials();
+          for (const body of potentials) {
+            if (this.body.collides(body, this.board.collisionResult)) {
+              this.dispatcher.dispatch(event, /*entity:*/ this, /*collisionWith:*/ (body as Polygon|Circle|Point).entity, /*result:*/ this.board.collisionResult);
             }
           }
         }
       }
     }
+  }
+
+  update(delta: number) {
+    this._body.x = this.absX;
+    this._body.y = this.absY;
+    this.checkCollisions(delta);
+    this.updateGravity(delta);
+    this.updateSpeed(delta);
   }
 
   /*********************

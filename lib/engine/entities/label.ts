@@ -6,7 +6,7 @@ export class Label extends Entity {
   private _fontSize: number = 20;
   private _hoverFontSize: number = 0;
   private _clickFontSize: number = 0;
-  private _fontColor: string = "rgba(255,255,255, 1.0)";
+  private _fontColor: string = "rgba(0,0,0, 1.0)";
   private _hoverFontColor: string = "";
   private _hoverCursor: string = "";
   private ctx: CanvasRenderingContext2D;
@@ -14,7 +14,6 @@ export class Label extends Entity {
   private _clicked: boolean = false;
 
   constructor(x: number, y: number, text: string, ctx: CanvasRenderingContext2D) {
-
     super(x, y, 0, 0);
     this.ctx = ctx;
     this.onMouseEvent("mousedown", this.onMouseDown.bind(this));
@@ -85,11 +84,13 @@ export class Label extends Entity {
 
   get width() {
     let width = 0;
-    this.ctx.font = this.fontSize + "px sans-serif";
-    let lines: string[] = this._text.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-      let tmp = this.ctx.measureText(this._text).width;
-      if (tmp > width) width = tmp;
+    if (this.ctx) {
+      this.ctx.font = this.fontSize + "px sans-serif";
+      let lines: string[] = this._text.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        let tmp = this.ctx.measureText(this._text).width;
+        if (tmp > width) width = tmp;
+      }
     }
     return width;
   }

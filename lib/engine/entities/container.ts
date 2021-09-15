@@ -44,9 +44,6 @@ export class Container extends Entity {
   }
 
   intersect(x: number, y: number, event: Event|null = null, depth = 1): boolean {
-    /*return x >= (this.x + this.translate.x) && x <= (this.x + this.translate.x) + this.width &&
-      y >= (this.y + this.translate.y) && y <= (this.y + this.translate.y) + this.height;*/
-    this.board?.ctx.translate(this.translate.x, this.translate.y);
     // Rotate context from entity center
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
     this.board?.ctx.rotate(this.rotate);
@@ -93,15 +90,15 @@ export class Container extends Entity {
     this.board?.ctx.translate(this.x + this.width/2, this.y + this.height/2);
     this.board?.ctx.rotate(this.rotate*-1);
     this.board?.ctx.translate((this.x + this.width/2)*-1, (this.y + this.height/2)*-1)
-    // UNDO Translate context
-    this.board?.ctx.translate(this.translate.x*-1, this.translate.y*-1);
     return result;
   }
 
   public addEntity(entity: Entity) {
     if (this.board && !entity.board) {
       entity.init(this.board);
+      this.board.collisionSystem.insert(entity.body);
     }
+    entity.parent = this;
     this._entities.push(entity);
   }
 
@@ -114,14 +111,33 @@ export class Container extends Entity {
   public removeEntity(entity: Entity) {
     let index = this._entities.indexOf(entity)
     if (index > -1) {
+      if (this.entities[index] instanceof Container) {
+        (this.entities[index] as Container).removeEntities((this.entities[index] as Container).entities);
+      }
       this._entities.splice(index, 1);
     }
+    this.board?.collisionSystem.remove(entity.body);
   }
 
   public removeEntities(entities: Entity[]) {
     for (const entity of entities) {
       this.removeEntity(entity);
     }
+  }
+
+  getEntitiesIn(x1: number, y1: number, x2: number, y2: number) {
+    let entities: Entity[] = [];
+    for (const entity of this.entities) {
+      if (entity instanceof Container) {
+        entities = entities.concat((entity as Container).getEntitiesIn(x1, y1, x2, y2));
+      }else if (entity.absX < x2 &&
+          entity.absX + entity.width > x1 &&
+          entity.absY < y2 &&
+          entity.height + entity.absY > y1) {
+        entities.push(entity);
+      }
+    }
+    return entities;
   }
 
   /**
@@ -168,12 +184,12 @@ export class Container extends Entity {
         this.board.resetStyles();
         // Save context
         ctx.save();
-        // Translate context
-        ctx.translate(entity.translate.x * this.board.scale, entity.translate.y * this.board.scale);
         // Rotate context from entity center
-        ctx.translate(entity.x * this.board.scale + entity.width * this.board.scale/2, entity.y * this.board.scale + entity.height * this.board.scale/2);
-        ctx.rotate(entity.rotate);
-        ctx.translate((entity.x * this.board.scale + entity.width * this.board.scale/2)*-1, (entity.y * this.board.scale + entity.height * this.board.scale/2)*-1)
+        if (entity.rotate !== 0) {
+          ctx.translate(entity.x * this.board.scale + entity.width * this.board.scale / 2, entity.y * this.board.scale + entity.height * this.board.scale / 2);
+          ctx.rotate(entity.rotate);
+          ctx.translate((entity.x * this.board.scale + entity.width * this.board.scale / 2) * -1, (entity.y * this.board.scale + entity.height * this.board.scale / 2) * -1);
+        }
         // Draw entity
         entity.draw(ctx);
         // Restore context
@@ -202,26 +218,6 @@ export class Container extends Entity {
 
   get board(): Board | null {
     return super.board;
-  }
-
-  _updateAbsX(parentAbsX: number = 0) {
-    this._absX = this.x + this.translate.x + parentAbsX;
-    if (this.board) {
-      this._absX *= this.board.scale;
-    }
-    for (const entity of this.entities) {
-      entity._updateAbsX(this._absX);
-    }
-  }
-
-  _updateAbsY(parentAbsY: number = 0) {
-    this._absY = this.y + this.translate.y + parentAbsY;
-    if (this.board) {
-      this._absY *= this.board.scale;
-    }
-    for (const entity of this.entities) {
-      entity._updateAbsX(this._absX);
-    }
   }
 
   update(delta: number): void {

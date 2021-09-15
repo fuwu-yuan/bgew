@@ -18,6 +18,9 @@ export class SpriteSheetImage extends Image {
     private _spriteX: number = 0;
     private _spriteY: number = 0;
 
+    private _spritePaddingX: number = 0;
+    private _spritePaddingY: number = 0;
+
     constructor(src: string, spritesCountX: number, spritesCountY: number,
                 x: number, y: number, width: number, height: number,
                 defaultSpritePosition: {x: number, y: number} = {x: 0, y: 0}) {
@@ -26,8 +29,6 @@ export class SpriteSheetImage extends Image {
         this._spritesCountY = spritesCountY;
         this._spriteX = defaultSpritePosition.x;
         this._spriteY = defaultSpritePosition.y;
-        this.image = document.createElement("img");
-        this.image.src = src;
     }
 
     update(delta: number) {
@@ -35,13 +36,13 @@ export class SpriteSheetImage extends Image {
         if (this._spriteSheetWidth === 0 || this._spriteSheetHeight === 0) {
             this._spriteSheetWidth = this.image.width;
             this._spriteSheetHeight = this.image.height;
-            this._sourceW = this._spriteSheetWidth / this._spritesCountX;
-            this._sourceH = this._spriteSheetHeight / this._spritesCountY;
+            this._sourceW = (this._spriteSheetWidth - (this._spritePaddingX * (this._spritesCountX+1))) / this._spritesCountX;
+            this._sourceH = (this._spriteSheetHeight - (this._spritePaddingY * (this._spritesCountY+1))) / this._spritesCountY;
         }
 
         if (this._sourceW && this._sourceH) {
-            this._sourceX = this._spriteX * (this._sourceW);
-            this._sourceY = this._spriteY * (this._sourceH);
+            this._sourceX = this._spriteX * (this._sourceW + this._spritePaddingX) + this._spritePaddingX
+            this._sourceY = this._spriteY * (this._sourceH + this._spritePaddingY) + this._spritePaddingY;
         }
 
         if (this.currentAnimation && !this.pause) {
@@ -147,6 +148,40 @@ export class SpriteSheetImage extends Image {
 
     set pause(value: boolean) {
         this._pause = value;
+    }
+
+    get spritePaddingX(): number {
+        return this._spritePaddingX;
+    }
+
+    set spritePaddingX(value: number) {
+        this._spritePaddingX = value;
+        this._sourceW = (this._spriteSheetWidth - (this._spritePaddingX * (this._spritesCountX+1))) / this._spritesCountX;
+    }
+
+    get spritePaddingY(): number {
+        return this._spritePaddingY;
+    }
+
+    set spritePaddingY(value: number) {
+        this._spritePaddingY = value;
+        this._sourceH = (this._spriteSheetHeight - (this._spritePaddingY * (this._spritesCountY+1))) / this._spritesCountY;
+    }
+
+    get spriteX(): number {
+        return this._spriteX;
+    }
+
+    set spriteX(value: number) {
+        this._spriteX = value;
+    }
+
+    get spriteY(): number {
+        return this._spriteY;
+    }
+
+    set spriteY(value: number) {
+        this._spriteY = value;
     }
 }
 

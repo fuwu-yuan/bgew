@@ -8,18 +8,18 @@ export class Dispatcher {
     this.events = {};
   }
 
-  dispatch(eventName: string, data: any = null) {
+  dispatch(eventName: string, ...args: any[]) {
     const event = this.events[eventName];
     if (event) {
-      event.fire(data);
+      event.fire(...args);
     }
     const all = this.events["all"];
     if (all) {
-      all.fire(data);
+      all.fire(...args);
     }
   }
 
-  on(eventName: string, callback: (data: any) => void) {
+  on(eventName: string, callback: (...args: any[]) => void) {
     let event = this.events[eventName];
     if (!event) {
       event = new DispatcherEvent(eventName);
@@ -28,7 +28,7 @@ export class Dispatcher {
     event.registerCallback(callback);
   }
 
-  off(eventName: string, callback: (data: any) => void) {
+  off(eventName: string, callback: (...args: any[]) => void) {
     const event = this.events[eventName];
     if (event && event.callbacks.indexOf(callback) > -1) {
       event.unregisterCallback(callback);

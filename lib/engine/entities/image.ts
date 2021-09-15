@@ -2,7 +2,7 @@ import {Entity} from "../entity";
 
 export class Image extends Entity {
 
-    protected image: HTMLImageElement;
+    protected _image: HTMLImageElement;
     protected _sourceX: number|null;
     protected _sourceY: number|null;
     protected _sourceW: number|null;
@@ -16,18 +16,20 @@ export class Image extends Entity {
         this._sourceW = sourceW;
         this._sourceH = sourceH;
 
-        this.image = document.createElement("img");
-        this.image.src = src;
+        this._image = document.createElement("img");
+        this._image.src = src;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx);
         if (this.width === 0 || this.height === 0) {
-            this.board?.ctx.drawImage(this.image, this.x, this.y);
+            ctx.drawImage(this.image, this.x, this.y);
         }else if (this._sourceX === null || this._sourceY === null || this._sourceW === null || this._sourceH === null) {
-            this.board?.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         }else {
-            this.board?.ctx.drawImage(this.image, this._sourceX, this._sourceY, this._sourceW, this._sourceH, this.x, this.y, this.width, this.height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(this.image, this._sourceX, this._sourceY, this._sourceW, this._sourceH, this.x, this.y, this.width, this.height);
+            ctx.imageSmoothingEnabled = true;
         }
     }
 
@@ -37,5 +39,9 @@ export class Image extends Entity {
             this.width = this.image.width;
             this.height = this.image.height;
         }
+    }
+
+    get image() {
+        return this._image;
     }
 }

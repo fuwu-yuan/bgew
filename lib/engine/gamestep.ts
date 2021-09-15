@@ -1,14 +1,18 @@
 import {Board} from "./board";
 import {Entity} from "./entity";
-import {SocketMessage} from "./network/socketMessage";
+import {SocketMessage} from "./network";
+import {Camera} from "./camera";
+import {Timer} from "./timer";
 
 export abstract class GameStep {
   abstract name: string;
-
   private _board: Board;
+  private _camera: Camera;
+  private _timers: Timer[] = [];
 
   constructor(board: Board) {
     this._board = board;
+    this._camera = new Camera();
   }
 
   get board() {
@@ -32,6 +36,9 @@ export abstract class GameStep {
         entity.update(delta);
       });
     }
+    for (const timer of this._timers) {
+      timer.update(delta);
+    }
   }
 
   /**
@@ -41,18 +48,23 @@ export abstract class GameStep {
     if (this.board.canvas) {
       // Clear canvas
       this.board.clear();
+      if (this.camera) {
+        this.board.ctx.translate(-this.camera.x, -this.camera.y);
+      }else {
+        console.error("Missing camera");
+      }
       this.board.entities.forEach((entity: Entity) => {
         if (entity.visible) {
           // Reset style
           this.board.resetStyles();
           // Save context
           this.board.ctx.save();
-          // Translate context
-          this.board.ctx.translate(entity.translate.x * this.board.scale, entity.translate.y * this.board.scale);
           // Rotate context from entity center
-          this.board.ctx.translate(entity.x * this.board.scale + entity.width * this.board.scale/2, entity.y * this.board.scale + entity.height * this.board.scale/2);
-          this.board.ctx.rotate(entity.rotate);
-          this.board.ctx.translate((entity.x * this.board.scale + entity.width * this.board.scale/2)*-1, (entity.y * this.board.scale + entity.height * this.board.scale/2)*-1);
+          if (entity.rotate !== 0) {
+            this.board.ctx.translate(entity.x * this.board.scale + entity.width * this.board.scale/2, entity.y * this.board.scale + entity.height * this.board.scale/2);
+            this.board.ctx.rotate(entity.rotate);
+            this.board.ctx.translate((entity.x * this.board.scale + entity.width * this.board.scale/2)*-1, (entity.y * this.board.scale + entity.height * this.board.scale/2)*-1);
+          }
 
           // Draw entity
           entity.draw(this.board.ctx as CanvasRenderingContext2D);
@@ -60,6 +72,30 @@ export abstract class GameStep {
           this.board.ctx.restore();
         }
       });
+    }
+  }
+
+  get camera(): Camera {
+    return this._camera;
+  }
+
+  set camera(value: Camera) {
+    this._camera = value;
+  }
+
+  addTimer(time: number, end: () => void, repeat: boolean = true): Timer {
+    let timer = new Timer(time, end, () => {
+      this.removeTimer(timer);
+    });
+    timer.repeat = repeat;
+    this._timers.push(timer);
+    return timer;
+  }
+
+  removeTimer(timer: Timer) {
+    const index: number = this._timers.indexOf(timer, 0);
+    if (index > -1) {
+      this._timers.splice(index, 1);
     }
   }
 }
