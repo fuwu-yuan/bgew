@@ -323,11 +323,17 @@ export class Board {
 
   /**
    * Register a sound to play it later using function {@link playSound}
-   * @param src assets or url src
-   * @param name register name
+   * @param name Sound name
+   * @param src One or more src (same sound with multiple src formats)
+   * @param repeat Ether to repeat of not the sound at the end
+   * @param volume Volume to play sound by default (default 0.5)
+   * @param sprites Object defining sprites in this sound (optional)
+   * @return Sound the newly created sound
    */
-  registerSound(name: string, src: string) {
-    this._sounds[name] = new Sound(name, src);
+  registerSound(name: string, src: string|string[], repeat: boolean = false, volume: number = 0.5, sprites: {[key: string]: [number, number]} = {}): Sound {
+    let sound = new Sound(name, src, repeat, volume, sprites);
+    this._sounds[name] = sound;
+    return sound;
   }
 
   /**
@@ -335,20 +341,27 @@ export class Board {
    * @param name the registered sound name
    * @param repeat play the sound again at the end
    * @param volume volume to play the sound (between 0.0 and 1.0)
+   * @param sprite the sprite to play
    */
-  playSound(name: string, repeat: boolean = false, volume: number = 1.0) {
+  playSound(name: string, repeat?: boolean, volume?: number, sprite?: string): number | null {
     if (typeof this._sounds[name] !== 'undefined') {
-      setTimeout(() => {
-        this._sounds[name].play(repeat, volume);
-      }, 10);
-    }else {
-      console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
+      return this._sounds[name].play(repeat, volume, sprite);
     }
+    console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
+    return null;
   }
 
-  stopSound(name: string, fadeOut: boolean = false, fadeTime: number = 1000) {
+  /**
+   * Stop the sound
+   *
+   * @param name Sound name
+   * @param fadeout Ether to fadeout the sound before stopping it
+   * @param fadeDuration Fadeout duration
+   * @param id Optional sound id
+   */
+  stopSound(name: string, fadeout: boolean = false, fadeDuration: number = 1000, id?: number) {
     if (typeof this._sounds[name] !== 'undefined') {
-      this._sounds[name].stop(fadeOut, fadeTime);
+      this._sounds[name].stop(fadeout, fadeDuration, id);
     }else {
       console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
     }

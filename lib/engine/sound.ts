@@ -1,116 +1,106 @@
+import {Howl} from "howler";
+
 export class Sound {
-    private _name;
-    private _audio: HTMLAudioElement;
-    private _src: string;
-    private _repeat: boolean;
-    private _volume: number;
+    private _howl: Howl;
 
-    constructor(name: string, src: string) {
-        this._name = name;
-        this._src = src;
-        this._repeat = false;
-        this._volume = 1.0;
-        this._audio = new Audio(src);
-        this._audio.addEventListener('ended', () => { this.ended(); }, false);
-        this._audio.addEventListener("canplaythrough", () => {
-            document.body.addEventListener("click", () => {
-                this._audio.muted = true;
-                this._audio.play();
-                this.stop();
-                this._audio.muted = false;
-            }, {once: true});
-        }, {once: true});
-    }
-
-    get src(): string {
-        return this._src;
-    }
-
-    set src(value: string) {
-        this._src = value;
-    }
-
-    get repeat(): boolean {
-        return this._repeat;
-    }
-
-    set repeat(value: boolean) {
-        this._repeat = value;
-    }
-
-    get volume(): number {
-        return this._volume;
-    }
-
-    set volume(value: number) {
-        this._volume = value;
-    }
-
-    play(repeat: boolean = false, volume: number = 1) {
-        this.repeat = repeat;
-        this.volume = volume;
-        this._audio.volume = volume;
-        this._audio.play();
-    }
-
-    stop(fadeOut: boolean = false, fadeTime: number = 1000) {
-        if (fadeOut) {
-            this.adjustVolume(this._audio, 0, {duration: fadeTime}).then(() => {
-                this._audio.pause();
-                this._audio.currentTime = 0;
-            });
-        }else {
-            this._audio.pause();
-            this._audio.currentTime = 0;
+    /**
+     *
+     * @param name Sound name
+     * @param src One or more src (same sound with multiple src formats)
+     * @param repeat Ether to repeat of not the sound at the end
+     * @param volume Volume to play sound by default (default 0.5)
+     * @param sprites Object defining sprites in this sound (optional)
+     */
+    constructor(name: string, src: string|string[], repeat: boolean = false, volume: number = 0.5, sprites: {[key: string]: [number, number]} = {}) {
+        if (!Array.isArray(src)) {
+            src = [src];
         }
-    }
-
-    private ended() {
-        this._audio.currentTime = 0;
-        if (this.repeat) {
-            this.play(this.repeat, this.volume);
-        }
-    }
-
-    private async adjustVolume(
-        element: HTMLMediaElement,
-        newVolume: number,
-        {
-            duration = 1000,
-            easing = swing,
-            interval = 13,
-        }: {
-            duration?: number,
-            easing?: typeof swing,
-            interval?: number,
-        } = {},
-    ): Promise<void> {
-        const originalVolume = element.volume;
-        const delta = newVolume - originalVolume;
-
-        if (!delta || !duration || !easing || !interval) {
-            element.volume = newVolume;
-            return Promise.resolve();
-        }
-
-        const ticks = Math.floor(duration / interval);
-        let tick = 1;
-
-        return new Promise(resolve => {
-            const timer = setInterval(() => {
-                element.volume = originalVolume + (
-                    easing(tick / ticks) * delta
-                );
-
-                if (++tick === ticks + 1) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, interval);
+        this._howl = new Howl({
+            src: src,
+            autoplay: false,
+            loop: repeat,
+            volume: volume,
+            sprite: sprites,
+            onend: () => {}
         });
     }
-}
 
-export function swing(p: number) {
-    return 0.5 - Math.cos(p * Math.PI) / 2;
+    /**
+     * Play the sound
+     *
+     * @param repeat Ether to repeat the sound at the end
+     * @param volume Optional volume (default 0.5)
+     * @param sprite Optional sprite name if your sound is divided by sprites
+     * @return id The sound id. Can be used to stop sound
+     */
+    play(repeat?: boolean, volume?: number, sprite?: string): number {
+        let id = this._howl.play(sprite);
+        if (typeof repeat !== 'undefined') {
+            this.repeat(repeat, id);
+        }
+        if (typeof volume !== 'undefined') {
+            this.volume(volume, id);
+        }
+        return id;
+    }
+
+    /**
+     * Stop the current sound
+     *
+     * @param fadeout Ether to fadeout the sound before stopping it
+     * @param fadeDuration The fade duration if fadeout
+     * @param id Optional id of the sound
+     */
+    stop(fadeout: boolean = false, fadeDuration: number = 1000, id?: number) {
+        this._howl.once("fade", soundId => {
+            this._howl.stop(soundId);
+        }, id);
+        if (fadeout) {
+            this._howl.fade(this._howl.volume(), 0, fadeDuration, id);
+        }else {
+            this._howl.stop(id);
+        }
+    }
+
+    /**
+     * Mute/Unmute the sound
+     *
+     * @param mute True to mute, False to unmute
+     * @param id Optional sound id
+     */
+    mute(mute: boolean = true, id?: number) {
+        this._howl.mute(mute, id);
+    }
+
+    /**
+     * Change sound volume
+     *
+     * @param volume New volume
+     * @param id Optional sound id
+     */
+    volume(volume: number, id?: number) {
+        if (id) {
+            this._howl.volume(volume, id);
+        }else {
+            this._howl.volume(volume);
+        }
+    }
+
+    /**
+     * Loop the sound
+     *
+     * @param repeat Ether to repeat or not the sound at the end
+     * @param id Optional sound id
+     */
+    repeat(repeat: boolean = true, id?: number) {
+        this._howl.loop(repeat, id)
+    }
+
+    get howl(): Howl {
+        return this._howl;
+    }
+
+    set howl(value: Howl) {
+        this._howl = value;
+    }
 }
