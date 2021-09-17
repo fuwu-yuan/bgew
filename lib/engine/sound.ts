@@ -52,8 +52,10 @@ export class Sound {
      * @param id Optional id of the sound
      */
     stop(fadeout: boolean = false, fadeDuration: number = 1000, id?: number) {
+        let oldVolume = this._howl.volume();
         this._howl.once("fade", soundId => {
             this._howl.stop(soundId);
+            this._howl.volume(oldVolume);
         }, id);
         if (fadeout) {
             this._howl.fade(this._howl.volume(), 0, fadeDuration, id);
