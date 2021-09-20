@@ -52,6 +52,7 @@ export abstract class Entity {
       [this.absX+this.width, this.absY+this.height],
       [0, this.absY+this.height]
     ]);
+    this.board.collisionSystem.insert(this.body);
   }
 
   get parent(): Container | null {

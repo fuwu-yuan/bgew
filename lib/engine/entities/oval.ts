@@ -62,8 +62,9 @@ export class Oval extends Entity {
   }
 
   init(board: Board) {
-    super.init(board);
+    this.board = board;
     this._body = new Circle(this, this.absX, this.absY, this.radiusX);
+    this.board.collisionSystem.insert(this.body);
   }
 
   private onMouseDown(event: MouseEvent) {

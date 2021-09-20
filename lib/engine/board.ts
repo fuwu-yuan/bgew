@@ -245,7 +245,6 @@ export class Board {
   addEntity(entity: Entity) {
     entity.init(this);
     this.entities.push(entity);
-    this.collisionSystem.insert(entity.body);
   }
 
   /**

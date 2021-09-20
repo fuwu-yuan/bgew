@@ -96,7 +96,6 @@ export class Container extends Entity {
   public addEntity(entity: Entity) {
     if (this.board && !entity.board) {
       entity.init(this.board);
-      this.board.collisionSystem.insert(entity.body);
     }
     entity.parent = this;
     this._entities.push(entity);
@@ -212,7 +211,10 @@ export class Container extends Entity {
   set board(value: Board | null) {
     super.board = value;
     for (const entity of this.entities) {
-      entity.board = this.board;
+      if (this.board && !entity.board) {
+        entity.board = this.board;
+        this.board.collisionSystem.insert(entity.body);
+      }
     }
   }
 

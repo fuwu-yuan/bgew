@@ -29,8 +29,9 @@ export class Line extends Entity {
   }
 
   init(board: Board) {
-    super.init(board);
+    this.board = board;
     this._body = new Polygon(this, this.parent ? this.parent.absX : 0, this.parent ? this.parent.absY : 0, [[this.x1, this.y1], [this.x2, this.y2]]);
+    this.board.collisionSystem.insert(this.body);
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
