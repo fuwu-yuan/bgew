@@ -229,6 +229,13 @@ export class Container extends Entity {
     }
   }
 
+  checkCollisions(): void {
+    super.checkCollisions();
+    for (const entity of this.entities) {
+      entity.checkCollisions();
+    }
+  }
+
   /*********************
    * Getters & Setters *
    *********************/

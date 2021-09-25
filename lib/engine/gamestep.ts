@@ -41,6 +41,14 @@ export abstract class GameStep {
     }
   }
 
+  checkCollisions() {
+    if (this.board.canvas && this.board.ctx) {
+      this.board.entities.forEach(function(entity: Entity) {
+        entity.checkCollisions();
+      });
+    }
+  }
+
   /**
    * Game draw loop
    */
@@ -72,6 +80,12 @@ export abstract class GameStep {
           this.board.ctx.restore();
         }
       });
+      if (this.board?.debug.collision) {
+        this.board.ctx.strokeStyle = '#FF0000';
+        this.board.ctx.beginPath();
+        this.board?.collisionSystem.draw(this.board.ctx);
+        this.board.ctx.stroke();
+      }
     }
   }
 

@@ -39,6 +39,7 @@ export class Board {
   private _collisionSystem = new Collisions();
   private _collisionResult = this._collisionSystem.createResult();
   private _sounds: {[key: string]: Sound} = {};
+  private _events: Event[] = [];
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false) {
     // @ts-ignore
@@ -109,10 +110,18 @@ export class Board {
     this.gameloop = new Gameloop();
     this.gameloopId = this.gameloop.setGameLoop((delta) => {
       if (this.debug.stats) stats.begin();
+      // Canvas resize handle
       this.canvas.width = this.config.board.size.width * this.scale;
       this.canvas.height = this.config.board.size.height * this.scale;
+      // Inputs
+      this.dispatchMouseEvents();
+      this.dispatchKeyboardEvents();
+      // Update
       this.step.update(delta*1000);
+      // Collision
       this.collisionSystem.update();
+      this.step.checkCollisions();
+      // Draw
       this.step.draw();
       if (this.debug.stats) stats.end();
       //console.log(Math.round(1000/(delta*1000)) + " FPS");
@@ -405,60 +414,73 @@ export class Board {
   /**
    * On mouse event, catch it and dispatch right event to entities
    *
-   * @param event
    * @private
    */
-  private dispatchMouseEvent(event: MouseEvent) {
-    event.preventDefault();
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) * (1/this.scale);
-    const y = (event.clientY - rect.top) * (1/this.scale);
-    this.dispatcher.dispatch(event.type, event, x, y);
-    this.entities.forEach(function (entity: Entity) {
-      if (entity.disabled || !entity.visible) return;
-      if (entity.intersect(x, y, event)) {
-        if (event.type === "mousemove") {
-          if (!entity.hovered) {
-            entity.hovered = true;
-            entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event), x, y);
+  private dispatchMouseEvents() {
+    for (let i = 0; i < this._events.length; i++) {
+      let event = this._events[i];
+      if (event instanceof MouseEvent) {
+        event.preventDefault();
+        const rect = this.canvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) * (1/this.scale);
+        const y = (event.clientY - rect.top) * (1/this.scale);
+        this.dispatcher.dispatch(event.type, event, x, y);
+        this.entities.forEach(function (entity: Entity) {
+          if (entity.disabled || !entity.visible) return;
+          if (entity.intersect(x, y, event)) {
+            if (event.type === "mousemove") {
+              if (!entity.hovered) {
+                entity.hovered = true;
+                entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event), x, y);
+              }
+            }
+            if (event.type === "click") {
+              if (!entity.focus) {
+                entity.focus = true;
+              }
+            }
+            entity.dispatcher.dispatch(event.type, event);
+          }else {
+            if (event.type === "mousemove") {
+              if (entity.hovered) {
+                entity.hovered = false;
+                entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event), x, y);
+              }
+            }
+            if (event.type === "click") {
+              if (entity.focus) {
+                entity.focus = false;
+              }
+            }
           }
-        }
-        if (event.type === "click") {
-          if (!entity.focus) {
-            entity.focus = true;
-          }
-        }
-        entity.dispatcher.dispatch(event.type, event);
-      }else {
-        if (event.type === "mousemove") {
-          if (entity.hovered) {
-            entity.hovered = false;
-            entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event), x, y);
-          }
-        }
-        if (event.type === "click") {
-          if (entity.focus) {
-            entity.focus = false;
-          }
-        }
+        });
+        this._events.splice(i, 1);
+        i--;
       }
-    });
+    }
   }
 
   /**
    * On keyboard event, catch it and dispatch right event to entities
    *
-   * @param event
    * @private
    */
-  private dispatchKeyboardEvent(event: KeyboardEvent) {
-    this.dispatcher.dispatch(event.type, event);
-    this.entities.forEach(function (entity: Entity) {
-      if (entity.disabled || !entity.visible) return;
-      if (entity.focus) {
-        entity.dispatcher.dispatch(event.type, event);
+  private dispatchKeyboardEvents() {
+    for (let i = 0; i < this._events.length; i++) {
+      let event = this._events[i];
+      if (event instanceof KeyboardEvent) {
+        console.log(event.type);
+        this.dispatcher.dispatch(event.type, event);
+        this.entities.forEach(function (entity: Entity) {
+          if (entity.disabled || !entity.visible) return;
+          if (entity.focus) {
+            entity.dispatcher.dispatch(event.type, event);
+          }
+        });
+        this._events.splice(i, 1);
+        i--;
       }
-    });
+    }
   }
 
   /**
@@ -586,23 +608,27 @@ export class Board {
     return this._collisionResult;
   }
 
+  private saveEventForLater(event: Event) {
+    this._events.push(event);
+  }
+
   /**
    * Init all events from the board
    *
    * @private
    */
   private initEvents() {
-    this.canvas.addEventListener('click', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('dblclick', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('contextmenu', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('mousedown', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseup', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseenter', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent.bind(this));
-    this.canvas.addEventListener('mousemove', this.dispatchMouseEvent.bind(this));
+    this.canvas.addEventListener('click', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('dblclick', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('contextmenu', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('mousedown', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('mouseup', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('mouseenter', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('mouseleave', this.saveEventForLater.bind(this));
+    this.canvas.addEventListener('mousemove', this.saveEventForLater.bind(this));
 
-    window.addEventListener("keyup", this.dispatchKeyboardEvent.bind(this));
-    window.addEventListener("keydown", this.dispatchKeyboardEvent.bind(this));
-    window.addEventListener("keypress", this.dispatchKeyboardEvent.bind(this));
+    window.addEventListener("keyup", this.saveEventForLater.bind(this));
+    window.addEventListener("keydown", this.saveEventForLater.bind(this));
+    window.addEventListener("keypress", this.saveEventForLater.bind(this));
   }
 }

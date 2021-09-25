@@ -18,9 +18,11 @@ export abstract class Entity {
   protected _zoom: number = 1;
   protected _x: number;
   protected _y: number;
-  private _directionX: number = 0;
-  private _directionY: number = 0;
-  private _speed: number = 0;
+  //private _directionX: number = 0;
+  //private _directionY: number = 0;
+  //private _speed: number = 0;
+  private _speedX: number = 0;
+  private _speedY: number = 0;
   protected _width: number;
   protected _height: number;
   protected _dispatcher = new Dispatcher();
@@ -48,9 +50,9 @@ export abstract class Entity {
     this.board = board;
     this._body = new Polygon(this, this.absX, this.absY, [
       [0, 0],
-      [this.absX+this.width, 0],
-      [this.absX+this.width, this.absY+this.height],
-      [0, this.absY+this.height]
+      [this.width, 0],
+      [this.width, this.height],
+      [0, +this.height]
     ]);
     this.board.collisionSystem.insert(this.body);
   }
@@ -116,7 +118,7 @@ export abstract class Entity {
     this._y = value;
   }
 
-  get speedX(): number {
+  /*get speedX(): number {
     return this.speed * this.directionX;
   }
 
@@ -130,69 +132,113 @@ export abstract class Entity {
 
   set speed(value: number) {
     this._speed = value;
-  }
+  }*/
 
   /**
    * Get directionX in radian
    */
-  get directionX(): number {
+  /*get directionX(): number {
     return this._directionX;
-  }
+  }*/
 
   /**
    * Set directionX in radian
    * @param value in radian
    */
-  set directionX(value: number) {
+  /*set directionX(value: number) {
     this._directionX = value;
-  }
+  }*/
 
   /**
    * Get directionY in radian
    */
-  get directionY(): number {
+  /*get directionY(): number {
     return this._directionY;
-  }
+  }*/
 
   /**
    * Set directionY in radian
    * @param value in radian
    */
-  set directionY(value: number) {
+  /*set directionY(value: number) {
     this._directionY = value;
-  }
+  }*/
 
   /**
    * Get direction in radian<br>
    * To get degrees use {@link Entity.directionDegrees}
    */
-  get direction() {
+  /*get direction() {
     return Math.atan(this.directionY / this.directionX);
-  }
+  }*/
 
   /**
    * Set direction in radian<br>
    * To use degrees use {@link Entity.directionDegrees}
    * @param value in radian
    */
-  set direction(value: number) {
+  /*set direction(value: number) {
     this.directionX = Math.cos(value);
     this.directionY = Math.sin(value);
-  }
+  }*/
 
   /**
    * Get the direction in degrees
    */
-  get directionDegrees() {
+  /*get directionDegrees() {
     return this.direction * 180 / Math.PI;
-  }
+  }*/
 
   /**
    * Set the direction in degrees
    * @param value in degrees
    */
-  set directionDegrees(value: number) {
+  /*set directionDegrees(value: number) {
     this.direction = value / 180 * Math.PI;
+  }*/
+
+  get speedX(): number {
+    return this._speedX;
+  }
+
+  set speedX(value: number) {
+    this._speedX = value;
+  }
+
+  get speedY(): number {
+    return this._speedY;
+  }
+
+  set speedY(value: number) {
+    this._speedY = value;
+  }
+
+  setSpeedWithAngle(speed: number, angle: number, degrees: boolean = false) {
+    if (degrees) {
+      angle = speed / 180 * Math.PI;
+    }
+    this._speedX = speed * Math.cos(angle);
+    this._speedY = -speed * Math.sin(angle);
+  }
+
+  get speed() {
+    return Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY)
+  }
+
+  get angle() {
+    return Math.atan2(-this.speedY, this.speedX);
+  }
+
+  set angle(value: number) {
+    this.setSpeedWithAngle(this.speed, value);
+  }
+
+  get angleInDegrees() {
+    return this.angle * 180 / Math.PI
+  }
+
+  set angleInDegrees(value: number) {
+    this.setSpeedWithAngle(this.speed, value, true);
   }
 
   get absX(): number {
@@ -271,24 +317,6 @@ export abstract class Entity {
   }
 
   intersectWithEntity(entity: Entity): boolean {
-    /*let thisAbsY = this.absY;
-    let thisAbsX = this.absX;
-    if (this instanceof Oval) {
-      thisAbsY = this.absY - (this as Oval).radiusY;
-      thisAbsX = this.absX - (this as Oval).radiusX;
-    }
-
-    let otherAbsY = entity.absY;
-    let otherAbsX = entity.absX;
-    if (entity instanceof Oval) {
-      otherAbsY = entity.absY - (entity as Oval).radiusY;
-      otherAbsX = entity.absX - (entity as Oval).radiusX;
-    }
-
-    return thisAbsX < otherAbsX + entity.width &&
-        thisAbsX + this.width > otherAbsX &&
-        thisAbsY < otherAbsY + entity.height &&
-        this.height + thisAbsY > otherAbsY;*/
     return this.body.collides(entity.body, this.board?.collisionResult);
   }
 
@@ -383,12 +411,6 @@ export abstract class Entity {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    if (this.board?.debug.collision) {
-      ctx.strokeStyle = '#FF0000';
-      ctx.beginPath();
-      this.board?.collisionSystem.draw(ctx);
-      ctx.stroke();
-    }
     if (this.board) {
       ctx.scale(this.board.scale, this.board.scale);
     }
@@ -396,6 +418,13 @@ export abstract class Entity {
   onDestroy(): void {
 
   }
+  update(delta: number) {
+    this._body.x = this.absX;
+    this._body.y = this.absY;
+    this.updateGravity(delta);
+    this.updateSpeed(delta);
+  }
+
 
   private updateGravity(delta: number) {
     /*if (this.board && this.board.gravity > 0 && this._weight > 0) {
@@ -420,7 +449,7 @@ export abstract class Entity {
     this.y += this.speedY * delta/1000;
   }
 
-  private checkCollisions(delta: number) {
+  checkCollisions() {
     if (this.board) {
       for (const event of Object.keys(this.dispatcher.events)) {
         // Intersection with point
@@ -456,14 +485,6 @@ export abstract class Entity {
         }
       }
     }
-  }
-
-  update(delta: number) {
-    this._body.x = this.absX;
-    this._body.y = this.absY;
-    this.checkCollisions(delta);
-    this.updateGravity(delta);
-    this.updateSpeed(delta);
   }
 
   /*********************
