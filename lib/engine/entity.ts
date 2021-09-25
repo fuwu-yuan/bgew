@@ -197,22 +197,44 @@ export abstract class Entity {
     this.direction = value / 180 * Math.PI;
   }*/
 
+  /**
+   * Get entity speedX
+   */
   get speedX(): number {
     return this._speedX;
   }
 
+  /**
+   * Set entity speedX
+   * @param value
+   */
   set speedX(value: number) {
     this._speedX = value;
   }
 
+  /**
+   * Get entity speedY
+   */
   get speedY(): number {
     return this._speedY;
   }
 
+  /**
+   * Set entity speedY
+   * @param value
+   */
   set speedY(value: number) {
     this._speedY = value;
   }
 
+  /**
+   *
+   * Set entity speed in specified angle in radian or degrees
+   *
+   * @param speed in pixel per seconds
+   * @param angle in radian or degrees
+   * @param degrees true if angle is in degrees (default: radian)
+   */
   setSpeedWithAngle(speed: number, angle: number, degrees: boolean = false) {
     if (degrees) {
       angle = speed / 180 * Math.PI;
@@ -221,22 +243,49 @@ export abstract class Entity {
     this._speedY = -speed * Math.sin(angle);
   }
 
+  /**
+   * Set entity speed keeping current angle (default angle : atan2(-0, 0) = 0 rad)
+   * @param value
+   */
+  set speed(value: number) {
+    this.setSpeedWithAngle(value, this.angle);
+  }
+
+  /**
+   * Get current speed (depending on speedX and speedY)
+   */
   get speed() {
     return Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY)
   }
 
+  /**
+   * Get current angle in radian (depending on speedX and speedY). Default angle : atan2(-0, 0) = 0 rad
+   */
   get angle() {
     return Math.atan2(-this.speedY, this.speedX);
   }
 
+  /**
+   * Set angle in radian keeping current speed (will update speedX and speedY) keeping global speed
+   *
+   * @param value
+   */
   set angle(value: number) {
     this.setSpeedWithAngle(this.speed, value);
   }
 
+  /**
+   * Get current angle in degrees
+   */
   get angleInDegrees() {
     return this.angle * 180 / Math.PI
   }
 
+  /**
+   * Set angle in degrees keeping current speed (will update speedX and speedY) keeping global speed
+   * @see Entity.angle
+   * @param value
+   */
   set angleInDegrees(value: number) {
     this.setSpeedWithAngle(this.speed, value, true);
   }
