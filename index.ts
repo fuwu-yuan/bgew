@@ -10,3 +10,4 @@ export * as Network from './lib/engine/network';
 export { AbstractNetworkManager } from './lib/engine/network/networkmanager.abstract'
 export { Timer } from './lib/engine/timer';
 export { Body, Result } from "detect-collisions";
+export { Vector2D } from './lib/classes/Vector2D';
