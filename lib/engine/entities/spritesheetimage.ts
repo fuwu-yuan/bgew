@@ -29,6 +29,7 @@ export class SpriteSheetImage extends Image {
         this._spritesCountY = spritesCountY;
         this._spriteX = defaultSpritePosition.x;
         this._spriteY = defaultSpritePosition.y;
+        this.update(0);
     }
 
     update(delta: number) {
@@ -140,6 +141,10 @@ export class SpriteSheetImage extends Image {
 
     get currentAnimation(): Animation | null {
         return this._currentAnimation;
+    }
+
+    stopAnimation() {
+        this._currentAnimation = null;
     }
 
     get pause(): boolean {
