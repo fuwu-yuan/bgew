@@ -34,7 +34,7 @@ export abstract class Entity {
   protected _solid: boolean = false;
   protected _weight: number = 0;
   protected _gravitySpeed: number = 0;
-  protected _falling: boolean = false;
+  protected _falling: boolean = true;
   protected _body: Body;
 
   protected constructor(x: number, y: number, width: number, height: number, id: string = "") {
@@ -237,7 +237,7 @@ export abstract class Entity {
    */
   setSpeedWithAngle(speed: number, angle: number, degrees: boolean = false) {
     if (degrees) {
-      angle = speed / 180 * Math.PI;
+      angle = angle / 180 * Math.PI;
     }
     this._speedX = speed * Math.cos(angle);
     this._speedY = -speed * Math.sin(angle);
@@ -470,28 +470,62 @@ export abstract class Entity {
   update(delta: number) {
     this._body.x = this.absX;
     this._body.y = this.absY;
+    (this._body as Polygon).scale_x = this.zoom;
+    (this._body as Polygon).scale_y = this.zoom;
     this.updateGravity(delta);
     this.updateSpeed(delta);
   }
 
-
   private updateGravity(delta: number) {
-    /*if (this.board && this.board.gravity > 0 && this._weight > 0) {
+    if (this.board && this.board.gravity > 0 && this._weight > 0) {
       this.falling = true;
-      this._gravitySpeed += this.board.gravity;
-      this.speedY += this._gravitySpeed;
-      if (this.speedY > 0) {
-        let willY = this.absY+this.height+(this.speedY*delta/1000)+1
+      this.speedY += this.board.gravity*delta/1000;
+      if (this.speedY > 0 && this.solid) {
+        let willY = this.absY+this.height+(this.speedY*delta/1000)+1;
         let willHit = this.board.getEntitiesIn(this.absX+1, willY, this.absX+this.width-1, willY).find((e) => {return e.solid;});
         if (typeof willHit !== 'undefined' && willHit.absY <= this.absY + this.height) {
-          this._gravitySpeed = 0;
-          this.speed = 0;
+          this.speedY = 0;
           this.y = willHit.y - this.height;
           this.falling = false;
         }
       }
-    }*/
+    }
   }
+
+  /*private getCollisionBellowOverlap(delta: number) {
+    let collideBellowOverlap = null;
+    if (this.board) {
+      //this.body.y += this.board?.gravity*delta/1000;
+      //this.board.collisionSystem.update();
+      const potentials = this.body.potentials();
+      for (const body of potentials) {
+        if (this.body.collides(body, this.board.collisionResult)
+            && this.board.collisionResult.overlap_y === 1
+            && this.solid
+            && (body as Circle|Polygon|Point).entity?.solid) {
+          collideBellowOverlap = this.board.collisionResult.overlap * this.board.collisionResult.overlap_y;
+          break;
+        }
+      }
+      //this.body.y -= this.board?.gravity*delta/1000;
+      //this.board.collisionSystem.update();
+      return collideBellowOverlap;
+    }
+  }
+
+  private updateGravity(delta: number) {
+    if (this.board && this.board.gravity > 0 && this._weight > 0) {
+      let collisionOverlapY = this.getCollisionBellowOverlap(delta);
+      if (!collisionOverlapY) {
+        this.falling = true;
+        this.speedY += this.board?.gravity*delta/1000;
+      }else if (this.speedY > 0) {
+          this.falling = false;
+          this.speedY = 0;
+          this.y -= collisionOverlapY-1;
+      }
+    }
+  }*/
 
   private updateSpeed(delta: number) {
     this.x += this.speedX * delta/1000;

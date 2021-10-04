@@ -344,6 +344,14 @@ export class Board {
     return sound;
   }
 
+  getSound(name: string) {
+    if (typeof this._sounds[name] !== 'undefined') {
+      return this._sounds[name];
+    }
+    console.error("No sound registed with name '" + name + "'. Registered sounds : " + Object.keys(this._sounds).join(' | '));
+    return null;
+  }
+
   /**
    * Play a sound previously registered using function {@link registerSound}
    * @param name the registered sound name
@@ -469,7 +477,6 @@ export class Board {
     for (let i = 0; i < this._events.length; i++) {
       let event = this._events[i];
       if (event instanceof KeyboardEvent) {
-        console.log(event.type);
         this.dispatcher.dispatch(event.type, event);
         this.entities.forEach(function (entity: Entity) {
           if (entity.disabled || !entity.visible) return;
@@ -588,7 +595,7 @@ export class Board {
    * @param end
    * @param repeat
    */
-  addTimer(time: number, end: () => void, repeat: boolean = true): Timer {
+  addTimer(time: number, end: () => void, repeat: boolean = false): Timer {
     return this.step.addTimer(time, end, repeat);
   }
 
