@@ -1,4 +1,4 @@
-import {Dispatcher} from "../classes/Dispatcher";
+import {Dispatcher, DispatcherOptions} from "../classes/Dispatcher";
 import {Board} from "./board";
 import {Container} from "./entities";
 import {Polygon, Circle, Point} from "../collisionSystem";
@@ -36,6 +36,7 @@ export abstract class Entity {
   protected _gravitySpeed: number = 0;
   protected _falling: boolean = true;
   protected _body: Body;
+  protected _opacity: number = 1;
 
   protected constructor(x: number, y: number, width: number, height: number, id: string = "") {
     this._id = id !== "" ? id : ('@entity-'+Entity.__AI++);
@@ -394,18 +395,20 @@ export abstract class Entity {
    * Listen mouse event on this entity
    * @param event An event from this list : click, dblclick, contextmenu, mousedown, mouseup, mouseenter, mouseleave, mousemove, all
    * @param callback
+   * @param options
    */
-  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void) {
-    this.dispatcher.on(event, callback);
+  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void, options?: DispatcherOptions) {
+    this.dispatcher.on(event, callback, options);
   }
 
   /**
    * Listen mouse event on this entity
    * @param event An event from this list : keyup, keydown, keypress, all
    * @param callback
+   * @param options
    */
-  onKeyboardEvent(event: "keyup" | "keydown" | "keypress" | "all", callback: (event: KeyboardEvent) => void) {
-    this.dispatcher.on(event, callback);
+  onKeyboardEvent(event: "keyup" | "keydown" | "keypress" | "all", callback: (event: KeyboardEvent) => void, options?: DispatcherOptions) {
+    this.dispatcher.on(event, callback, options);
   }
 
   /**
@@ -413,22 +416,24 @@ export abstract class Entity {
    * @param x
    * @param y
    * @param callback
+   * @param options
    */
-  onIntersect(x: number, y: number, callback: (entity: Entity, point: {x: number, y: number}) => void) {
-    this.dispatcher.on(`intersect-${x}-${y}`, callback);
+  onIntersect(x: number, y: number, callback: (entity: Entity, point: {x: number, y: number}) => void, options?: DispatcherOptions) {
+    this.dispatcher.on(`intersect-${x}-${y}`, callback, options);
   }
 
   /**
    * Listen for the two entities intersection
    * @param entity
    * @param callback
+   * @param options
    */
-  onIntersectWithEntity(entity: Entity, callback: (entity: Entity, collisionWith: Entity, result: Result) => void) {
-    this.dispatcher.on(`entityintersect-${entity.id}`, callback);
+  onIntersectWithEntity(entity: Entity, callback: (entity: Entity, collisionWith: Entity, result: Result) => void, options?: DispatcherOptions) {
+    this.dispatcher.on(`entityintersect-${entity.id}`, callback, options);
   }
 
-  onIntersectWithAnyEntity(callback: (entity: Entity, collisionWith: Entity, result: Result) => void) {
-    this.dispatcher.on("anyentityintersect", callback);
+  onIntersectWithAnyEntity(callback: (entity: Entity, collisionWith: Entity, result: Result) => void, options?: DispatcherOptions) {
+    this.dispatcher.on("anyentityintersect", callback, options);
   }
 
   getPath2D(): Path2D {
@@ -441,6 +446,14 @@ export abstract class Entity {
 
   get body() {
     return this._body;
+  }
+
+  get opacity(): number {
+    return this._opacity;
+  }
+
+  set opacity(value: number) {
+    this._opacity = value;
   }
 
   debug(ctx: CanvasRenderingContext2D) {
@@ -461,6 +474,7 @@ export abstract class Entity {
 
   draw(ctx: CanvasRenderingContext2D): void {
     if (this.board) {
+      ctx.globalAlpha = this.opacity;
       ctx.scale(this.board.scale, this.board.scale);
     }
   }
