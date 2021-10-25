@@ -2,21 +2,26 @@ import {Entity} from "../entity";
 
 export class Image extends Entity {
 
-    protected _image: HTMLImageElement;
+    protected _image: HTMLImageElement|HTMLVideoElement;
     protected _sourceX: number|null;
     protected _sourceY: number|null;
     protected _sourceW: number|null;
     protected _sourceH: number|null;
 
     constructor(src: string, x: number, y: number, width: number = 0, height: number = 0,
-                sourceX: number|null = null, sourceY: number|null = null, sourceW: number|null = null, sourceH: number|null = null) {
+                sourceX: number|null = null, sourceY: number|null = null, sourceW: number|null = null,
+                sourceH: number|null = null, isVideo: boolean = false) {
         super(x, y, width, height);
         this._sourceX = sourceX;
         this._sourceY = sourceY;
         this._sourceW = sourceW;
         this._sourceH = sourceH;
 
-        this._image = document.createElement("img");
+        this._image = document.createElement(isVideo ? "video" : "img");
+        if (isVideo) {
+            (this._image as HTMLVideoElement).addEventListener("ended", () => { (this._image as HTMLVideoElement).play(); });
+            document.addEventListener("click", () => { (this._image as HTMLVideoElement).play(); }, {once: true});
+        }
         this._image.src = src;
     }
 
