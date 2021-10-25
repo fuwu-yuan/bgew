@@ -4,6 +4,7 @@ export * from './rectangle';
 export * from './container';
 export * from './inputtext';
 export * from './image';
+export * from './video';
 export * from './oval'
 export * from './spritesheetimage';
 export * from './checkbox';
