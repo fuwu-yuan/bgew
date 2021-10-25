@@ -3,7 +3,7 @@ import {GameStep} from "./gamestep";
 import {NetworkManager} from "./network";
 import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
-import {Container} from "./entities";
+import {Container, Rectangle} from "./entities";
 import {Debug} from "../classes/Debug";
 import * as workerTimers from 'worker-timers';
 import {Dispatcher} from "../classes/Dispatcher";
@@ -230,19 +230,56 @@ export class Board {
    * Change the game step (will call onLeave of current step, and onEnter on new step)
    * @param step
    * @param data
+   * @param fade
    */
-  moveToStep(step: string, data: any = {}) {
-    if (this.step) {
-      this.step.onLeave();
-    }
-    this.step = this.steps[step];
-    if (this.step) {
-      this.reset();
-      this.step.onEnter(data);
-      this.step.draw();
-    }else {
-      console.error("No step found with name '" + step + "'");
-    }
+  moveToStep(step: string, data: any = {}, fade?: {color: string, duration: number}) {
+      if (fade) {
+        const self = this;
+        this.addEntity(new class extends Rectangle {
+          protected _opacity = 0;
+          update(delta: number) {
+            if (this.opacity < 1) {
+              this.opacity += 1/(fade.duration/delta);
+              if (this.opacity > 1) { this.opacity = 1; }
+            }else {
+              if (self.step) {
+                self.step.onLeave();
+              }
+              self.step = self.steps[step];
+              if (self.step) {
+                self.reset();
+                self.step.onEnter(data);
+                self.addEntity(new class extends Rectangle {
+                  protected _opacity = 1;
+                  update(delta: number) {
+                    if (this.opacity > 0) {
+                      this.opacity -= 1/(fade.duration/delta);
+                      if (this.opacity < 0) { this.opacity = 0; }
+                    }else {
+                      self.removeEntity(this);
+                    }
+                  }
+                }(0, 0, this.width, this.height, fade.color, fade.color));
+                self.step.draw();
+              }else {
+                console.error("No step found with name '" + step + "'");
+              }
+            }
+          }
+        }(0, 0, this.width, this.height, fade.color, fade.color));
+      }else {
+        if (this.step) {
+          this.step.onLeave();
+        }
+        this.step = this.steps[step];
+        if (this.step) {
+          this.reset();
+          this.step.onEnter(data);
+          this.step.draw();
+        }else {
+          console.error("No step found with name '" + step + "'");
+        }
+      }
   }
 
   /**

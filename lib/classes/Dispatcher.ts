@@ -19,22 +19,26 @@ export class Dispatcher {
     }
   }
 
-  on(eventName: string, callback: (...args: any[]) => void) {
+  on(eventName: string, callback: (...args: any[]) => void, options?: DispatcherOptions) {
     let event = this.events[eventName];
     if (!event) {
       event = new DispatcherEvent(eventName);
       this.events[eventName] = event;
     }
-    event.registerCallback(callback);
+    event.registerCallback(callback, options);
   }
 
   off(eventName: string, callback: (...args: any[]) => void) {
     const event = this.events[eventName];
-    if (event && event.callbacks.indexOf(callback) > -1) {
+    if (event) {
       event.unregisterCallback(callback);
       if (event.callbacks.length === 0) {
         delete this.events[eventName];
       }
     }
   }
+}
+
+export interface DispatcherOptions {
+  once?: boolean
 }
