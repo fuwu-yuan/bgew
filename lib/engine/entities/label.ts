@@ -3,6 +3,7 @@ import {Entity} from "../entity";
 export class Label extends Entity {
 
   private _text: string;
+  protected _fontFamily: string = "sans-serif";
   private _fontSize: number = 20;
   private _hoverFontSize: number = 0;
   private _clickFontSize: number = 0;
@@ -60,7 +61,7 @@ export class Label extends Entity {
       if (this.hoverFontColor !== "") ctx.fillStyle = this.hoverFontColor;
     }
 
-    ctx.font = fontSize + "px sans-serif";
+    ctx.font = fontSize + "px " + this.fontFamily;
 
     //text position
     var textX = this.x;
@@ -85,7 +86,7 @@ export class Label extends Entity {
   get width() {
     let width = 0;
     if (this.ctx) {
-      this.ctx.font = this.fontSize + "px sans-serif";
+      this.ctx.font = this.fontSize + "px " + this.fontFamily;
       let lines: string[] = this._text.split("\n");
       for (let i = 0; i < lines.length; i++) {
         let tmp = this.ctx.measureText(this._text).width;
@@ -122,4 +123,6 @@ export class Label extends Entity {
   set hoverFontSize(value: number) { this._hoverFontSize = value; }
   get hoverCursor(): string { return this._hoverCursor; }
   set hoverCursor(value: string) { this._hoverCursor = value; }
+  get fontFamily(): string { return this._fontFamily; }
+  set fontFamily(value: string) { this._fontFamily = value; }
 }
