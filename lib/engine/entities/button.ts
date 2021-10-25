@@ -2,6 +2,7 @@ import {Entity} from "../entity";
 
 export class Button extends Entity {
   protected _text: string;
+  private _fontFamily: string = "sans-serif";
   // Normal
   private _strokeColor: string = "rgba(0,0,0, 1.0)";
   private _fillColor: string = "rgba(255, 255, 255, 0.0)";
@@ -114,7 +115,7 @@ export class Button extends Entity {
       if (this.hoverFontColor !== "")  ctx.fillStyle = this.hoverFontColor;
     }
 
-    ctx.font = fontSize + "px sans-serif";
+    ctx.font = fontSize + "px " + this.fontFamily;
 
     //text position
     let debugFontSize = fontSize - 4;
@@ -169,4 +170,6 @@ export class Button extends Entity {
   set disabledFontSize(value: number) { this._disabledFontSize = value; }
   get disabledFontColor(): string { return this._disabledFontColor; }
   set disabledFontColor(value: string) { this._disabledFontColor = value; }
+  get fontFamily(): string { return this._fontFamily; }
+  set fontFamily(value: string) { this._fontFamily = value; }
 }
