@@ -40,6 +40,7 @@ export class Board {
   private _collisionResult = this._collisionSystem.createResult();
   private _sounds: {[key: string]: Sound} = {};
   private _events: Event[] = [];
+  private _paused = false;
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false) {
     // @ts-ignore
@@ -116,13 +117,15 @@ export class Board {
       // Inputs
       this.dispatchMouseEvents();
       this.dispatchKeyboardEvents();
-      // Update
-      this.step.update(delta*1000);
-      // Collision
-      this.collisionSystem.update();
-      this.step.checkCollisions();
-      // Draw
-      this.step.draw();
+      if (!this.paused) {
+        // Update
+        this.step.update(delta*1000);
+        // Collision
+        this.collisionSystem.update();
+        this.step.checkCollisions();
+        // Draw
+        this.step.draw();
+      }
       if (this.debug.stats) stats.end();
       //console.log(Math.round(1000/(delta*1000)) + " FPS");
     }, 1000 / this._config.game.FPS)
@@ -167,6 +170,22 @@ export class Board {
     steps.forEach((step: GameStep) => {
       this.addStep(step);
     })
+  }
+
+  get paused(): boolean {
+    return this._paused;
+  }
+
+  set paused(paused: boolean) {
+    this._paused = paused;
+  }
+
+  pause() {
+    this.paused = true;
+  }
+
+  resume() {
+    this.paused = false;
   }
 
   get version(): string {
