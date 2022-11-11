@@ -397,7 +397,7 @@ export abstract class Entity {
    * @param callback
    * @param options
    */
-  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent) => void, options?: DispatcherOptions) {
+  onMouseEvent(event: "click" | "dblclick" | "contextmenu" | "mousedown" | "mouseup" | "mouseenter" | "mouseleave" | "mousemove" | "all", callback: (event: MouseEvent, x: number, y: number) => void, options?: DispatcherOptions) {
     this.dispatcher.on(event, callback, options);
   }
 

@@ -58,7 +58,7 @@ export class Container extends Entity {
           if (event && event.type === "mousemove") {
             if (!entity.hovered) {
               entity.hovered = true;
-              entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event));
+              entity.dispatcher.dispatch("mouseenter", new MouseEvent("mouseenter", event), x, y);
             }
           }
           if (event && event.type === "click") {
@@ -67,13 +67,13 @@ export class Container extends Entity {
             }
           }
           if (event) {
-            entity.dispatcher.dispatch(event.type, event);
+            entity.dispatcher.dispatch(event.type, event, x, y);
           }
         }else {
           if (event && event.type === "mousemove") {
             if (entity.hovered) {
               entity.hovered = false;
-              entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event));
+              entity.dispatcher.dispatch("mouseleave", new MouseEvent("mouseleave", event), x, y);
             }
           }
           if (event && event.type === "click") {

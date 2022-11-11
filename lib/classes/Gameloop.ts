@@ -1,4 +1,5 @@
 import browserHrtime from 'browser-process-hrtime';
+import * as workerTimers from 'worker-timers';
 
 export class Gameloop {
 // Taken and modified from https://github.com/timetocode/node-game-loop
@@ -80,9 +81,9 @@ export class Gameloop {
                 // unfortunately it seems our code/node leaks memory if setTimeout is
                 // called with a value less than 16, so we give up our accuracy for
                 // memory stability
-                setTimeout(gameLoop, Math.max(longwaitMs, 16));
+                workerTimers.setTimeout(gameLoop, Math.max(longwaitMs, 16));
             } else {
-                setTimeout(gameLoop,0);
+                workerTimers.setTimeout(gameLoop,0);
             }
         }
 

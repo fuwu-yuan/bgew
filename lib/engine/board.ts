@@ -43,14 +43,6 @@ export class Board {
   private _paused = false;
 
   constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false) {
-    // @ts-ignore
-    window.setTimeout = workerTimers.setTimeout;
-    // @ts-ignore
-    window.clearTimeout = workerTimers.clearTimeout;
-    // @ts-ignore
-    window.setInterval = workerTimers.setInterval;
-    // @ts-ignore
-    window.clearInterval = workerTimers.clearInterval;
     this._name = name;
     this._version = version;
     this._networkManager = new NetworkManager(this);
@@ -132,7 +124,7 @@ export class Board {
   }
 
   /*private loop(lastUpdate: number, lastLoopDuration: number = 0) {
-    setTimeout(() => {
+    window.setTimeout22(() => {
       let now = (new Date()).getTime();
       let delta = now - lastUpdate;
       lastUpdate = now;
@@ -503,7 +495,7 @@ export class Board {
                 entity.focus = true;
               }
             }
-            entity.dispatcher.dispatch(event.type, event);
+            entity.dispatcher.dispatch(event.type, event, x, y);
           }else {
             if (event.type === "mousemove") {
               if (entity.hovered) {
