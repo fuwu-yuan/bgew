@@ -1,7 +1,7 @@
 {
   "name": "@fuwu-yuan/bgew",
-  "version": "1.10.1",
-  "description": "BaguetteGameEngineWeb is a french 2D Web game engine",
+  "version": "1.13.0",
+  "description": "Baguette Game Engine Web is a french 2D Web game engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
