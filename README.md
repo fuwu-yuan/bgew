@@ -52,21 +52,22 @@ my-game/
 │   └── main.ts           # Main entry point
 ├── index.html            # HTML page hosting the game canvas
 ├── package.json          # Project dependencies and scripts
-├── package-lock.json
-└── tsconfig.json         # TypeScript compiler configuration
+└── package-lock.json
 ```
 
 In `main.ts`:
 
 ```ts
 import {Board} from "@fuwu-yuan/bgew";
+import {MainStep} from "./steps/main.step";
+
 const board = new Board(
   "My Game",
   "0.0.1",
   800,
   600,
   document.getElementById("game"),
-  "transparent"
+  "white"
 );
 
 /* Init and start board */
@@ -83,30 +84,29 @@ In `steps/main.step.ts`:
 
 ```ts
 import {Board, Entities, GameStep} from "@fuwu-yuan/bgew";
+
 export class MainStep extends GameStep {
-  name: string = "main";
-  private titleEntity: Entities.Label;
+    name: string = "main";
+    private titleEntity: Entities.Label;
 
-  constructor(board: Board) {
-    super(board);
-    this.titleEntity = new Entities.Label(0, 0, this.name, this.board.ctx);
-    this.titleEntity.fontSize = 100;
-    this.titleEntity.x = this.board.width / 2 - this.titleEntity.width / 2;
-    this.titleEntity.y = this.board.height / 2 - this.titleEntity.height / 2;
-    this.board.addEntity(this.titleEntity);
-  }
+    constructor(board: Board) {
+        super(board);
+        this.titleEntity = new Entities.Label(0, 0, this.board.name, this.board.ctx);
+        this.titleEntity.fontSize = 100;
+        this.titleEntity.x = this.board.width / 2 - this.titleEntity.width / 2;
+        this.titleEntity.y = this.board.height / 2 - this.titleEntity.height / 2;
+        this.board.addEntity(this.titleEntity);
+    }
 
-  onEnter(): void {
-    this.board.onMouseEvent('mousemove', (event, x, y) => {
-      this.titleEntity.x = x;
-      this.titleEntity.y = y;
-    });
-  }
+    onEnter(): void {
+        this.board.onMouseEvent('mousemove', (event, x, y) => {
+            this.titleEntity.x = x - this.titleEntity.width / 2;
+            this.titleEntity.y = y - this.titleEntity.height;
+        });
+    }
 
-  onLeave(): void {}
-
-  update(delta: number) {}
-
+    onLeave(): void {}
+    update(delta: number) {}
 }
 ```
 
