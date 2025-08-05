@@ -99,8 +99,8 @@ export class Inputtext extends Entity {
         if (this.board) {
             var rect = this.board.canvas.getBoundingClientRect();
             var position = {
-                top: rect.top + window.pageYOffset + this.board.gameHTMLElement.scrollTop,
-                left: rect.left + window.pageXOffset + this.board.gameHTMLElement.scrollLeft
+                top: 0,//rect.top + window.pageYOffset + this.board.gameHTMLElement.scrollTop,
+                left: 0//rect.left + window.pageXOffset/* + this.board.gameHTMLElement.scrollLeft*/
             };
             this._input.style.display = this.visible ? "block" : "none";
             this._input.style.left = position.left+this.absX*this.board.scale-1+"px";

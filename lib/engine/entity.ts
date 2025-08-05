@@ -55,7 +55,9 @@ export abstract class Entity {
       [this.width, this.height],
       [0, +this.height]
     ]);
-    this.board.collisionSystem.insert(this.body);
+    if (this.board?.collisionSystem) {
+      this.board.collisionSystem.insert(this.body);
+    }
   }
 
   get parent(): Container | null {
@@ -367,7 +369,10 @@ export abstract class Entity {
   }
 
   intersectWithEntity(entity: Entity): boolean {
-    return this.body.collides(entity.body, this.board?.collisionResult);
+    if (this.board?.collisionResult) {
+      return this.body.collides(entity.body, this.board?.collisionResult);
+    }
+    return false;
   }
 
   /**
@@ -572,7 +577,7 @@ export abstract class Entity {
           }
 
           // Intersection with any entity
-        }else if (event === "anyentityintersect") {
+        }else if (event === "anyentityintersect" && this.board.collisionResult) {
           const potentials = this.body.potentials();
           for (const body of potentials) {
             if (this.body.collides(body, this.board.collisionResult)) {

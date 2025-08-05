@@ -115,7 +115,9 @@ export class Container extends Entity {
       }
       this._entities.splice(index, 1);
     }
-    this.board?.collisionSystem.remove(entity.body);
+    if (this.board?.collisionSystem) {
+      this.board?.collisionSystem.remove(entity.body);
+    }
   }
 
   public removeEntities(entities: Entity[]) {
@@ -213,7 +215,9 @@ export class Container extends Entity {
     for (const entity of this.entities) {
       if (this.board && !entity.board) {
         entity.board = this.board;
-        this.board.collisionSystem.insert(entity.body);
+        if (this.board.collisionSystem) {
+          this.board.collisionSystem.insert(entity.body);
+        }
       }
     }
   }

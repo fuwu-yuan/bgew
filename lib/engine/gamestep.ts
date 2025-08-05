@@ -80,7 +80,7 @@ export abstract class GameStep {
           this.board.ctx.restore();
         }
       });
-      if (this.board?.debug.collision) {
+      if (this.board?.debug.collision && this.board?.collisionSystem) {
         this.board.ctx.strokeStyle = '#FF0000';
         this.board.ctx.beginPath();
         this.board?.collisionSystem.draw(this.board.ctx);

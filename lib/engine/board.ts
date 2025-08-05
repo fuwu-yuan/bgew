@@ -5,7 +5,6 @@ import {BoardConfig} from "./config";
 import {AbstractNetworkManager} from "./network/networkmanager.abstract";
 import {Container, Rectangle} from "./entities";
 import {Debug} from "../classes/Debug";
-import * as workerTimers from 'worker-timers';
 import {Dispatcher} from "../classes/Dispatcher";
 import {Gameloop} from "../classes/Gameloop";
 import {Timer} from "./timer";
@@ -36,18 +35,22 @@ export class Board {
   private _scale: number = 1;
   private _gameHTMLElement: HTMLElement;
   private _gravity: number = 0;
-  private _collisionSystem = new Collisions();
-  private _collisionResult = this._collisionSystem.createResult();
+  private _collisionSystem: Collisions|null = null;
+  private _collisionResult: Result|null = null;
   private _sounds: {[key: string]: Sound} = {};
   private _events: Event[] = [];
   private _paused = false;
 
-  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false) {
+  constructor(name: string, version: string, width: number, height: number, gameElement: HTMLElement|null = null, background = "transparent", enableHIDPI: boolean = false, enableCollisionSystem = true) {
     this._name = name;
     this._version = version;
     this._networkManager = new NetworkManager(this);
     this._config = new BoardConfig();
     this._debug = new Debug();
+    if (enableCollisionSystem) {
+      this._collisionSystem = new Collisions();
+      this._collisionResult = this._collisionSystem.createResult();
+    }
     this.config.board.size.width = width;
     this.config.board.size.height = height;
     this.config.board.background = background;
@@ -113,7 +116,9 @@ export class Board {
         // Update
         this.step.update(delta*1000);
         // Collision
-        this.collisionSystem.update();
+        if (this.collisionSystem) {
+          this.collisionSystem.update();
+        }
         this.step.checkCollisions();
         // Draw
         this.step.draw();
@@ -349,7 +354,9 @@ export class Board {
         (this.entities[index] as Container).removeEntities((this.entities[index] as Container).entities);
       }
       this.entities.splice(index, 1);
-      this.collisionSystem.remove(entity.body);
+      if (this.collisionSystem) {
+        this.collisionSystem.remove(entity.body);
+      }
     }
   }
 
@@ -439,7 +446,9 @@ export class Board {
       entity.onDestroy();
     }
     this.entities = [];
-    this._collisionSystem = new Collisions();
+    if (this._collisionSystem) {
+      this._collisionSystem = new Collisions();
+    }
     this.clear()
     document.body.style.cursor = "default";
   }
@@ -655,11 +664,11 @@ export class Board {
    this.step.removeTimer(timer);
   }
 
-  get collisionSystem(): Collisions {
+  get collisionSystem(): Collisions|null {
     return this._collisionSystem;
   }
 
-  get collisionResult(): Result {
+  get collisionResult(): Result|null {
     return this._collisionResult;
   }
 
