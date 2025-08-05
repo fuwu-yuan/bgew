@@ -40,8 +40,7 @@ examples/tower-of-hanoi/
 ├── index.html            # HTML page hosting the game canvas
 ├── package.json          # Project dependencies and scripts
 ├── package-lock.json
-├── README.md             # This file
-└── tsconfig.json         # TypeScript compiler configuration
+└── README.md             # This file
 ```
 
 ---
