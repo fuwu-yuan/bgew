@@ -1,0 +1,23 @@
+{
+  "name": "tower-of-hanoi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "copy-assets": "cpx \"assets/**/*\" public/assets",
+    "build": "esbuild src/main.ts --bundle --outfile=dist/bundle.js --format=esm --sourcemap",
+    "start": "npm run build && npx serve"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "cpx": "^1.5.0",
+    "esbuild": "^0.25.8",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@fuwu-yuan/bgew": "^1.13.0"
+  }
+}
