@@ -37,8 +37,8 @@ This is the recommended way to start quickly.
 
 Available starters:
 
-- Empty project: `npm init @fuwu-yuan/bgew-empty-starter`
-- Tower of Hanoi example: `npm init @fuwu-yuan/bgew-tower-starter`
+- Empty project: `npm init -y @fuwu-yuan/bgew-starter -- --template=empty-starter`
+- Tower of Hanoi example: `npm init -y @fuwu-yuan/bgew-starter -- --template=tower-of-hanoi`
 
 ---
 
