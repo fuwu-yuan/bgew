@@ -1,4 +1,4 @@
-import {version} from '/../../package.json';
+import {version} from '../../package.json';
 
 export class Globals {
     public static GAME_NAME: string = "Tower of Hanoi";
