@@ -29,17 +29,32 @@ As Java proved too heavy, the project was reimagined as a lightweight **web engi
 
 ## 🚀 Getting Started
 
-### 1. Install dependencies
+You can either:
+
+### ✅ Use a starter template
+
+This is the recommended way to start quickly.
+
+Available starters:
+
+- Empty project: `npm init @fuwu-yuan/bgew-empty-starter`
+- Tower of Hanoi example: `npm init @fuwu-yuan/bgew-tower-starter`
+
+---
+
+### ⚙️ Or set up manually
+
+#### 1. Install dependencies
 
 ```bash
 mkdir my-game # Create your game
 cd my-game
 npm init -y # Init package.json
-npm install --save-dev typescript @types/node esbuild # install dependencies
+npm install --save-dev typescript @types/node esbuild serve # install dependencies
 npm install @fuwu-yuan/bgew # Install BGEW
 ```
 
-### 2. Create your game
+#### 2. Create your game
 
 Organize your game like this:
 
@@ -140,10 +155,10 @@ In `index.html`:
 
 ```
 
-### 3. Run your game
+#### 3. Run your game
 
 ```bash
-esbuild src/main.ts --bundle --outfile=dist/bundle.js --format=esm --sourcemap && npx serve
+node_modules/.bin/esbuild src/main.ts --bundle --outfile=dist/bundle.js --format=esm --sourcemap && npx serve
 ```
 
 Or use a simple web server to serve the files and load them in a browser environment.
@@ -210,6 +225,6 @@ This project is open-source and available under the **MIT License**.
 
 ## 👋 Credits
 
-Created by **Steve** based on **Julien** and **Steve** original project during our EPITECH Beijing exchange program at BJTU.  
+Created by **[@stevecohenfr](https://github.com/stevecohenfr)** based on **[@julien-beguier](https://github.com/julien-beguier)** and **[@stevecohenfr](https://github.com/stevecohenfr)** original project during our EPITECH Beijing exchange program at BJTU.  
 Originally a Java engine project, now rewritten for the web.  
 “Because a baguette is best when shared - so is code... and games.”
