@@ -1,7 +1,7 @@
 {
-  "name": "tower-of-hanoi",
+  "name": "bgew-empty-starter",
   "version": "1.0.0",
-  "description": "A classic puzzle game where you move disks between rods without placing larger ones on smaller ones, built with BGEW",
+  "description": "An empty starter to use with BGEW 2D Game Engine",
   "scripts": {
     "build" : "node_modules/.bin/esbuild src/main.ts --bundle --outfile=dist/bundle.js --format=esm --sourcemap ",
     "serve" : "npx serve",

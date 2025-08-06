@@ -1,6 +1,6 @@
 {
   "name": "@fuwu-yuan/bgew",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "Baguette Game Engine Web is a french 2D Web game engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
     "web"
   ],
   "author": "Steve Cohen",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.6.1",
     "cpy-cli": "^2.0.0",
