@@ -1,8 +1,32 @@
 # BGEW — Documentation développeur (V2)
 
-Doc complète, prête pour GitHub `/docs`. Navigation via `_sidebar.md` (Docsify/Docute compatible) et fichiers Markdown modulaires.
-
-- **But**: permettre à un dev de créer un jeu jouable en < 15 minutes.
-- **Couverture**: API publiques (Board, GameStep, Entity, Entities, Network, Timer, Vector2D), collisions, son, timers, camera, input, debug, recettes.
-
-Astuce: pour une prévisualisation web rapide, tu peux poser un `index.html` Docsify, mais les `.md` se lisent tels quels sur GitHub.
+- [Accueil](README.md)
+- **Guide**
+  - [Architecture](01-architecture.md)
+  - [Entities](02-entities.md)
+  - [Input & Events](03-input-events.md)
+  - [Collisions](04-collisions.md)
+  - [Camera & Render](05-camera-render.md)
+  - [Sound & Timer](06-sound-timer.md)
+  - [Network](07-network.md)
+  - [Config & Debug](08-config-debug.md)
+- **Recettes**
+  - [Recipes](09-recipes.md)
+  - [Multi‑Steps Skeleton](11-multi-steps-skeleton.md)
+  - [Network Recipes](13-network-recipes.md)
+- **Exemples API**
+  - [Rectangle](10-examples/example-rectangle.md)
+  - [Label](10-examples/example-label.md)
+  - [Button](10-examples/example-button.md)
+  - [Checkbox](10-examples/example-checkbox.md)
+  - [Inputtext](10-examples/example-inputtext.md)
+  - [Line](10-examples/example-line.md)
+  - [Oval](10-examples/example-oval.md)
+  - [Image](10-examples/example-image.md)
+  - [Video](10-examples/example-video.md)
+  - [SpriteSheetImage](10-examples/example-spritesheet.md)
+  - [Container](10-examples/example-container.md)
+- **Annexes**
+  - [Cheat‑Sheet](cheatsheet.md)
+  - [API Reference](api-reference.md)
+  - [Patterns & Bonnes pratiques](12-patterns.md)
